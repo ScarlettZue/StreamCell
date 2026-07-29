@@ -37,7 +37,7 @@ export const LoginPage: React.FC = () => {
         {/* Header Logo limpio sin bordes ni recuadros */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-3">
-            <img src="/logo.png" alt="Streamcell Logo" className="h-20 w-auto object-contain drop-shadow-md" />
+            <img src="/logo.png" alt="Streamcell Logo" className="h-20 w-auto object-contain" />
           </div>
 
           <h1 className="text-2xl font-extrabold text-white tracking-wide">¡Hola de nuevo!</h1>

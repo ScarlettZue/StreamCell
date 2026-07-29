@@ -92,7 +92,6 @@ Los archivos del logo oficial de **Streamcell** se ubican en la carpeta `docs/lo
 - `docs/logo/Gemini_Generated_Image_5crfd85crfd85crf.png`
 - `docs/logo/Gemini_Generated_Image_fxn1rifxn1rifxn1.png`
 - `docs/logo/Gemini_Generated_Image_ua2jn3ua2jn3ua2j.png`
-- `docs/logoinit.png`
 
 ### Aplicación del Logo en la Interfaz:
 1. **Sidebar Principal:** Isotipo con resplandor morado/azul (`shadow-glow`) junto a la palabra **Streamcell** en degradado blanco a violeta.
