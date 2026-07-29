@@ -18,31 +18,32 @@
 - [x] Documentar Roadmap de Desarrollo ([docs/07-roadmap.md](file:///c:/Users/Tina/Documents/StreamCell/docs/07-roadmap.md))
 - [x] Documentar Especificación de API REST ([docs/08-api.md](file:///c:/Users/Tina/Documents/StreamCell/docs/08-api.md))
 - [x] Documentar UI/UX (Modal WhatsApp editable, Modal Deudas, Selector de Tipos) ([docs/09-ui-ux.md](file:///c:/Users/Tina/Documents/StreamCell/docs/09-ui-ux.md))
-- [x] Registro de Decisiones ADR 001 - 006 ([docs/decisiones.md](file:///c:/Users/Tina/Documents/StreamCell/docs/decisiones.md))
+- [x] Registro de Decisiones ADR 001 - 008 ([docs/decisiones.md](file:///c:/Users/Tina/Documents/StreamCell/docs/decisiones.md))
 - [x] Actualizar Modelo de Base de Datos PostgreSQL/Prisma ([docs/database.md](file:///c:/Users/Tina/Documents/StreamCell/docs/database.md))
 
 ---
 
 ## 🚀 Versión 0.1: Reemplazo Total de Excel
 
-### 0.1.1 Infraestructura & Base de Datos
-- [ ] Inicializar backend en `backend/` (Express + TypeScript + Prisma)
-- [ ] Inicializar frontend en `frontend/` (React + TypeScript + TailwindCSS)
-- [ ] Implementar esquemas Prisma (`User`, `Client`, `Account`, `AccountProfile`, `ProfileSubscription`, `DebtRecord`, `Sale`, `SaleDetail`)
-- [ ] Servicio de Cifrado para credenciales y PINs
+### 0.1.1 Infraestructura & Base de Datos Backend
+- [x] Inicializar backend en `backend/` (Express + TypeScript + Prisma)
+- [x] Configurar esquema Prisma relacional (`User`, `Category`, `Product`, `Account`, `AccountProfile`, `Client`, `ProfileSubscription`, `DebtRecord`, `Sale`, `SaleDetail`)
+- [x] Implementar Servicio de Hashing Bcrypt, JWT y Cifrado AES-256 para credenciales y PINs
+- [x] Implementar middleware global de manejo de errores (`AppError`) y respuestas estandarizadas
+- [x] Implementar Servicio de Dominio `WhatsAppDomainService` con franja horaria colombiana (`America/Bogota`)
 
 ### 0.1.2 Autenticación & CRM Clientes
-- [ ] Login de Administradora (JWT)
-- [ ] API y Pantalla para Clientes con Nombre, Celular, `clientKey` y indicador de Deuda Acumulada
+- [x] Seed de usuario Administradora inicial (`POST /api/v1/auth/seed-admin`)
+- [x] Endpoint de Login (`POST /api/v1/auth/login`) con generación de JWT
+- [ ] API REST CRUD para Clientes (Alta con Nombre, Celular, `clientKey` y Saldo Deudor)
 
 ### 0.1.3 Cuentas & Productos Multi-tipo
-- [ ] Wizard de Carga de Cuentas (Multiperfil con PIN, Cuenta Completa, Canva Pro con correo, Spotify con username y dirección de grupo)
+- [ ] Controller y Use Cases para productos `MULTI_PROFILE`, `FULL_ACCOUNT` y `PERSONAL_INVITATION` (Canva con correo, Spotify con dirección)
 - [ ] Configuración de fechas de corte (+30d modificables)
 
 ### 0.1.4 Retiros, Deudas & WhatsApp
-- [ ] Modal y lógica para Renovar, Retirar Sin Deuda o Retirar Con Deuda
-- [ ] Motor de mensajes WhatsApp con saludo dinámico según la hora ("días/tardes/noches") y modal editable en frontend
-- [ ] Redirección directa a WhatsApp (`wa.me`)
+- [ ] API para Renovar, Retirar Sin Deuda o Retirar Con Deuda
+- [ ] Endpoint `POST /api/v1/whatsapp/generate-reminder` con mensaje editable y redirección a `wa.me`
 
 ### 0.1.5 Ventas & Precios Dinámicos
 - [ ] Modificación de `unitCost` y `unitPrice` por transacción
