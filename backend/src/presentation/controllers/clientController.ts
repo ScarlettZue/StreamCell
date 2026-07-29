@@ -11,7 +11,7 @@ const createClientSchema = z.object({
 
 const updateClientSchema = z.object({
   name: z.string().min(2, 'El nombre debe ser válido').optional(),
-  phone: z.string().min(7, 'Número de celular inválido').optional(),
+  phone: z.string().optional(),
 });
 
 const payDebtSchema = z.object({
@@ -130,7 +130,7 @@ export class ClientController {
       const { id } = req.params;
       const data = updateClientSchema.parse(req.body);
 
-      if (data.phone) {
+      if (data.phone && data.phone.trim().length > 0) {
         data.phone = WhatsAppDomainService.normalizePhone(data.phone);
       }
 

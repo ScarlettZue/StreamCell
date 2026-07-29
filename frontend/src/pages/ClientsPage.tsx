@@ -12,6 +12,7 @@ export const ClientsPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [payModalOpen, setPayModalOpen] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   // Form State
   const [selectedClient, setSelectedClient] = useState<IClient | null>(null);
@@ -34,6 +35,9 @@ export const ClientsPage: React.FC = () => {
       setIsCreateModalOpen(false);
       resetForm();
     },
+    onError: (err: any) => {
+      setModalError(err.response?.data?.message || 'Error al guardar el cliente. Verifica los datos.');
+    },
   });
 
   const updateMutation = useMutation({
@@ -44,6 +48,9 @@ export const ClientsPage: React.FC = () => {
       setSelectedClient(null);
       resetForm();
     },
+    onError: (err: any) => {
+      setModalError(err.response?.data?.message || 'Error al actualizar el cliente. Intentalo de nuevo.');
+    },
   });
 
   const deleteMutation = useMutation({
@@ -52,6 +59,9 @@ export const ClientsPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
       setIsDeleteModalOpen(false);
       setSelectedClient(null);
+    },
+    onError: (err: any) => {
+      setModalError(err.response?.data?.message || 'Error al eliminar el cliente.');
     },
   });
 
@@ -63,14 +73,19 @@ export const ClientsPage: React.FC = () => {
       setSelectedClient(null);
       setAmountPaid(0);
     },
+    onError: (err: any) => {
+      setModalError(err.response?.data?.message || 'Error al procesar el pago.');
+    },
   });
 
   const resetForm = () => {
     setName('');
     setPhone('');
+    setModalError(null);
   };
 
   const handleOpenEdit = (client: IClient) => {
+    setModalError(null);
     setSelectedClient(client);
     setName(client.name);
     setPhone(client.phone === '3000000000' ? '' : client.phone);
@@ -78,24 +93,28 @@ export const ClientsPage: React.FC = () => {
   };
 
   const handleOpenDelete = (client: IClient) => {
+    setModalError(null);
     setSelectedClient(client);
     setIsDeleteModalOpen(true);
   };
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setModalError(null);
     if (!name || !phone) return;
     createMutation.mutate();
   };
 
   const handleUpdateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedClient || !name || !phone) return;
+    setModalError(null);
+    if (!selectedClient || !name) return;
     updateMutation.mutate();
   };
 
   const handlePaySubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setModalError(null);
     if (!selectedClient || amountPaid <= 0) return;
     payDebtMutation.mutate();
   };
@@ -128,7 +147,7 @@ export const ClientsPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Tabla de Clientes con Acciones CRUD Completa */}
+        {/* Tabla de Clientes */}
         <div className="glass-panel rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm">
           <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
             <thead className="bg-slate-100 dark:bg-slate-900/80 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
@@ -193,6 +212,7 @@ export const ClientsPage: React.FC = () => {
                           {debt > 0 && (
                             <button
                               onClick={() => {
+                                setModalError(null);
                                 setSelectedClient(client);
                                 setAmountPaid(debt);
                                 setPayModalOpen(true);
@@ -204,7 +224,6 @@ export const ClientsPage: React.FC = () => {
                             </button>
                           )}
 
-                          {/* Botón Editar */}
                           <button
                             onClick={() => handleOpenEdit(client)}
                             className="p-1.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400 border border-slate-200 dark:border-slate-700 rounded-lg transition-all"
@@ -213,7 +232,6 @@ export const ClientsPage: React.FC = () => {
                             <Edit2 className="w-4 h-4" />
                           </button>
 
-                          {/* Botón Eliminar */}
                           <button
                             onClick={() => handleOpenDelete(client)}
                             className="p-1.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-all"
@@ -244,6 +262,13 @@ export const ClientsPage: React.FC = () => {
                   <X className="w-5 h-5" />
                 </button>
               </div>
+
+              {modalError && (
+                <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{modalError}</span>
+                </div>
+              )}
 
               <form onSubmit={handleCreateSubmit} className="space-y-4">
                 <div>
@@ -306,6 +331,13 @@ export const ClientsPage: React.FC = () => {
                 </button>
               </div>
 
+              {modalError && (
+                <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{modalError}</span>
+                </div>
+              )}
+
               <form onSubmit={handleUpdateSubmit} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Nombre Completo</label>
@@ -322,10 +354,9 @@ export const ClientsPage: React.FC = () => {
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Número de Celular</label>
                   <input
                     type="text"
-                    required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Ej. 300 123 4567"
+                    placeholder="Ej. 312 662 2931"
                     className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 font-mono"
                   />
                 </div>
@@ -365,6 +396,13 @@ export const ClientsPage: React.FC = () => {
                   <X className="w-5 h-5" />
                 </button>
               </div>
+
+              {modalError && (
+                <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{modalError}</span>
+                </div>
+              )}
 
               <div className="space-y-4">
                 <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
@@ -407,6 +445,13 @@ export const ClientsPage: React.FC = () => {
                   <X className="w-5 h-5" />
                 </button>
               </div>
+
+              {modalError && (
+                <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{modalError}</span>
+                </div>
+              )}
 
               <form onSubmit={handlePaySubmit} className="space-y-4">
                 <div className="p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
