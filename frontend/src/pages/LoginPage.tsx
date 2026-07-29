@@ -31,7 +31,7 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-dark-bg flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
-      {/* Botón Flotante para cambiar Tema Oscuro / Claro sin emojis */}
+      {/* Botón Flotante para cambiar Tema Oscuro / Claro */}
       <button
         onClick={toggleTheme}
         className="absolute top-6 right-6 p-3 rounded-2xl glass-panel border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm flex items-center space-x-2 text-xs font-semibold z-20"
@@ -44,18 +44,18 @@ export const LoginPage: React.FC = () => {
           </>
         ) : (
           <>
-            <Moon className="w-4 h-4 text-brand-purple" />
+            <Moon className="w-4 h-4 text-purple-600" />
             <span>Modo Oscuro</span>
           </>
         )}
       </button>
 
       {/* Resplandor de fondo Azul & Morado */}
-      <div className="absolute w-[550px] h-[550px] bg-brand-blue/15 dark:bg-brand-blue/20 rounded-full blur-[140px] -top-20 -left-20 pointer-events-none"></div>
-      <div className="absolute w-[500px] h-[500px] bg-brand-purple/15 dark:bg-brand-purple/25 rounded-full blur-[140px] -bottom-20 -right-20 pointer-events-none"></div>
+      <div className="absolute w-[550px] h-[550px] bg-blue-500/15 dark:bg-blue-500/20 rounded-full blur-[140px] -top-20 -left-20 pointer-events-none"></div>
+      <div className="absolute w-[500px] h-[500px] bg-purple-500/15 dark:bg-purple-500/25 rounded-full blur-[140px] -bottom-20 -right-20 pointer-events-none"></div>
 
       <div className="w-full max-w-md glass-panel p-8 rounded-3xl shadow-glass border border-slate-200 dark:border-slate-800 relative z-10 animate-fade-in">
-        {/* Header Logo Grande y Prominente sin emojis ni recuadros */}
+        {/* Header Logo Grande y Prominente sin recuadros ni bordes */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <img
@@ -68,8 +68,8 @@ export const LoginPage: React.FC = () => {
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-wide">Iniciar Sesión</h1>
           <p className="text-sm text-slate-600 dark:text-slate-300 mt-1.5 flex items-center justify-center space-x-1.5">
             <span>Bienvenida a</span>
-            <strong className="text-brand-purple font-bold">Streamcell</strong>
-            <ShieldCheck className="w-4 h-4 text-brand-blue inline" />
+            <strong className="text-purple-600 dark:text-purple-400 font-bold">Streamcell</strong>
+            <ShieldCheck className="w-4 h-4 text-blue-600 inline" />
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Ingresa tus datos para acceder a la gestión de tu negocio</p>
         </div>
@@ -92,7 +92,7 @@ export const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@streamcell.com"
-                className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700/80 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all"
+                className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700/80 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all"
               />
             </div>
           </div>
@@ -107,7 +107,7 @@ export const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700/80 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all"
+                className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700/80 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all"
               />
             </div>
           </div>
@@ -115,7 +115,7 @@ export const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3.5 px-4 rounded-xl bg-brand-gradient text-white font-bold text-sm shadow-glow hover:bg-brand-gradient-hover active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-sm shadow-md hover:opacity-95 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
           >
             {isSubmitting ? (
               <>

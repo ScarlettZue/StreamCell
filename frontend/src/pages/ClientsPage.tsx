@@ -72,7 +72,7 @@ export const ClientsPage: React.FC = () => {
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center space-x-2 px-5 py-2.5 bg-brand-gradient text-white rounded-xl text-sm font-semibold shadow-glow hover:bg-brand-gradient-hover transition-all"
+            className="flex items-center justify-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl text-sm font-semibold shadow-md hover:opacity-95 transition-all"
           >
             <UserPlus className="w-4 h-4" />
             <span>Nuevo Cliente</span>
