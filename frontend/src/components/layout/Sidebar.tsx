@@ -23,10 +23,10 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 glass-panel h-screen fixed left-0 top-0 z-30 flex flex-col justify-between p-4 border-r border-slate-800/80 transition-colors duration-300">
+    <aside className="w-64 glass-panel h-screen fixed left-0 top-0 z-30 flex flex-col justify-between p-4 border-r border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
       <div>
-        {/* Header con el Logo Prominente y Grande sin bordes ni recuadros */}
-        <div className="flex flex-col items-start px-2 py-4 mb-4 border-b border-slate-800/60">
+        {/* Header con el Logo Grande y Prominente */}
+        <div className="flex flex-col items-start px-2 py-3 mb-4 border-b border-slate-200/80 dark:border-slate-800/60">
           <div className="flex items-center space-x-3 mb-1">
             <img
               src="/logo.png"
@@ -34,12 +34,12 @@ export const Sidebar: React.FC = () => {
               className="h-14 w-auto object-contain flex-shrink-0 filter drop-shadow-[0_4px_12px_rgba(139,92,246,0.3)] transition-transform hover:scale-105"
             />
             <div>
-              <h1 className="text-xl font-extrabold tracking-wider bg-gradient-to-r from-white via-slate-100 to-brand-purple-light bg-clip-text text-transparent">
+              <h1 className="text-xl font-extrabold tracking-wider text-slate-900 dark:text-white">
                 Streamcell
               </h1>
-              <span className="text-[11px] text-brand-purple-light font-medium flex items-center space-x-1">
+              <span className="text-[11px] text-brand-purple dark:text-brand-purple-light font-bold flex items-center space-x-1">
                 <span>Tu aliado digital</span>
-                <HeartHandshake className="w-3.5 h-3.5 text-brand-blue-light" />
+                <HeartHandshake className="w-3.5 h-3.5 text-brand-blue" />
               </span>
             </div>
           </div>
@@ -57,7 +57,7 @@ export const Sidebar: React.FC = () => {
                   `flex items-center space-x-3 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
                     isActive
                       ? 'bg-brand-gradient text-white shadow-glow border border-white/10 font-bold'
-                      : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/40'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/40'
                   }`
                 }
               >
@@ -70,22 +70,22 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Perfil del Usuario & Botón Salir */}
-      <div className="border-t border-slate-800/60 pt-4 px-2">
+      <div className="border-t border-slate-200/80 dark:border-slate-800/60 pt-4 px-2">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-blue to-brand-purple border border-white/20 flex items-center justify-center font-bold text-xs text-white shadow-md">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
             </div>
             <div className="overflow-hidden">
-              <p className="text-xs font-bold text-slate-100 truncate">{user?.name || 'Administradora'}</p>
-              <p className="text-[10px] text-slate-400 truncate">{user?.email || 'admin@streamcell.com'}</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Administradora'}</p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{user?.email || 'admin@streamcell.com'}</p>
             </div>
           </div>
         </div>
 
         <button
           onClick={logout}
-          className="w-full flex items-center justify-center space-x-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all duration-200"
+          className="w-full flex items-center justify-center space-x-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all duration-200"
         >
           <LogOut className="w-4 h-4" />
           <span>Cerrar Sesión</span>

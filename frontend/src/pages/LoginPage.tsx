@@ -30,11 +30,11 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-dark-bg flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
       {/* Botón Flotante para cambiar Tema Oscuro / Claro */}
       <button
         onClick={toggleTheme}
-        className="absolute top-6 right-6 p-3 rounded-2xl glass-panel border border-slate-700/60 text-slate-200 hover:text-white transition-all shadow-glass flex items-center space-x-2 text-xs font-semibold z-20"
+        className="absolute top-6 right-6 p-3 rounded-2xl glass-panel border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm flex items-center space-x-2 text-xs font-semibold z-20"
         title={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
       >
         {theme === 'dark' ? (
@@ -44,17 +44,17 @@ export const LoginPage: React.FC = () => {
           </>
         ) : (
           <>
-            <Moon className="w-4 h-4 text-brand-purple-light" />
+            <Moon className="w-4 h-4 text-brand-purple" />
             <span>Modo Oscuro</span>
           </>
         )}
       </button>
 
       {/* Resplandor de fondo Azul & Morado */}
-      <div className="absolute w-[550px] h-[550px] bg-brand-blue/20 rounded-full blur-[140px] -top-20 -left-20 pointer-events-none"></div>
-      <div className="absolute w-[500px] h-[500px] bg-brand-purple/25 rounded-full blur-[140px] -bottom-20 -right-20 pointer-events-none"></div>
+      <div className="absolute w-[550px] h-[550px] bg-brand-blue/15 dark:bg-brand-blue/20 rounded-full blur-[140px] -top-20 -left-20 pointer-events-none"></div>
+      <div className="absolute w-[500px] h-[500px] bg-brand-purple/15 dark:bg-brand-purple/25 rounded-full blur-[140px] -bottom-20 -right-20 pointer-events-none"></div>
 
-      <div className="w-full max-w-md glass-panel p-8 rounded-3xl shadow-glass border border-slate-800 relative z-10 animate-fade-in">
+      <div className="w-full max-w-md glass-panel p-8 rounded-3xl shadow-glass border border-slate-200 dark:border-slate-800 relative z-10 animate-fade-in">
         {/* Header Logo Grande y Prominente sin recuadros ni bordes */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -65,17 +65,17 @@ export const LoginPage: React.FC = () => {
             />
           </div>
 
-          <h1 className="text-2xl font-extrabold text-white tracking-wide">¡Hola de nuevo!</h1>
-          <p className="text-sm text-slate-300 mt-1.5 flex items-center justify-center space-x-1.5">
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-wide">¡Hola de nuevo!</h1>
+          <p className="text-sm text-slate-600 dark:text-slate-300 mt-1.5 flex items-center justify-center space-x-1.5">
             <span>Te damos la bienvenida a</span>
-            <strong className="text-brand-purple-light font-bold">Streamcell</strong>
-            <HeartHandshake className="w-4 h-4 text-brand-blue-light inline" />
+            <strong className="text-brand-purple font-bold">Streamcell</strong>
+            <HeartHandshake className="w-4 h-4 text-brand-blue inline" />
           </p>
-          <p className="text-xs text-slate-400 mt-1">Ingresa tus datos para acceder a la gestión de tu negocio</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Ingresa tus datos para acceder a la gestión de tu negocio</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center space-x-3 text-rose-300 text-sm">
+          <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center space-x-3 text-rose-700 dark:text-rose-300 text-sm">
             <AlertCircle className="w-5 h-5 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -83,7 +83,7 @@ export const LoginPage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Correo Electrónico</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Correo Electrónico</label>
             <div className="relative">
               <Mail className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -92,13 +92,13 @@ export const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@streamcell.com"
-                className="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all"
+                className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700/80 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Contraseña</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Contraseña</label>
             <div className="relative">
               <Lock className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -107,7 +107,7 @@ export const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all"
+                className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700/80 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all"
               />
             </div>
           </div>
