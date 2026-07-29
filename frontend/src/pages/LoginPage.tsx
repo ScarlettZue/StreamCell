@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, AlertCircle, Loader2, HeartHandshake } from 'lucide-react';
+import { Lock, Mail, AlertCircle, Loader2, HeartHandshake, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ export const LoginPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { login } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,20 +30,43 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-dark-bg flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
+      {/* Botón Flotante para cambiar Tema Oscuro / Claro */}
+      <button
+        onClick={toggleTheme}
+        className="absolute top-6 right-6 p-3 rounded-2xl glass-panel border border-slate-700/60 text-slate-200 hover:text-white transition-all shadow-glass flex items-center space-x-2 text-xs font-semibold z-20"
+        title={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
+      >
+        {theme === 'dark' ? (
+          <>
+            <Sun className="w-4 h-4 text-amber-400" />
+            <span>Modo Claro</span>
+          </>
+        ) : (
+          <>
+            <Moon className="w-4 h-4 text-brand-purple-light" />
+            <span>Modo Oscuro</span>
+          </>
+        )}
+      </button>
+
       {/* Resplandor de fondo Azul & Morado */}
-      <div className="absolute w-[500px] h-[500px] bg-brand-blue/20 rounded-full blur-[130px] -top-20 -left-20 pointer-events-none"></div>
-      <div className="absolute w-[450px] h-[450px] bg-brand-purple/25 rounded-full blur-[130px] -bottom-20 -right-20 pointer-events-none"></div>
+      <div className="absolute w-[550px] h-[550px] bg-brand-blue/20 rounded-full blur-[140px] -top-20 -left-20 pointer-events-none"></div>
+      <div className="absolute w-[500px] h-[500px] bg-brand-purple/25 rounded-full blur-[140px] -bottom-20 -right-20 pointer-events-none"></div>
 
       <div className="w-full max-w-md glass-panel p-8 rounded-3xl shadow-glass border border-slate-800 relative z-10 animate-fade-in">
-        {/* Header Logo limpio sin bordes ni recuadros */}
+        {/* Header Logo Grande y Prominente sin recuadros ni bordes */}
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-3">
-            <img src="/logo.png" alt="Streamcell Logo" className="h-20 w-auto object-contain" />
+          <div className="flex justify-center mb-4">
+            <img
+              src="/logo.png"
+              alt="Streamcell Logo"
+              className="h-28 w-auto object-contain filter drop-shadow-[0_8px_20px_rgba(139,92,246,0.35)] transition-transform hover:scale-105"
+            />
           </div>
 
           <h1 className="text-2xl font-extrabold text-white tracking-wide">¡Hola de nuevo!</h1>
-          <p className="text-sm text-slate-300 mt-1 flex items-center justify-center space-x-1.5">
+          <p className="text-sm text-slate-300 mt-1.5 flex items-center justify-center space-x-1.5">
             <span>Te damos la bienvenida a</span>
             <strong className="text-brand-purple-light font-bold">Streamcell</strong>
             <HeartHandshake className="w-4 h-4 text-brand-blue-light inline" />

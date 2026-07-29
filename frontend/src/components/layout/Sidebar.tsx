@@ -23,19 +23,25 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 glass-panel h-screen fixed left-0 top-0 z-30 flex flex-col justify-between p-4 border-r border-slate-800/80">
+    <aside className="w-64 glass-panel h-screen fixed left-0 top-0 z-30 flex flex-col justify-between p-4 border-r border-slate-800/80 transition-colors duration-300">
       <div>
-        {/* Header con el Logo Oficial de Streamcell sin bordes ni contenedores */}
-        <div className="flex items-center space-x-3 px-2 py-3 mb-6 border-b border-slate-800/60">
-          <img src="/logo.png" alt="Streamcell Logo" className="h-11 w-auto object-contain flex-shrink-0" />
-          <div>
-            <h1 className="text-xl font-extrabold tracking-wider bg-gradient-to-r from-white via-slate-100 to-brand-purple-light bg-clip-text text-transparent">
-              Streamcell
-            </h1>
-            <span className="text-[11px] text-brand-purple-light font-medium flex items-center space-x-1">
-              <span>Tu aliado digital</span>
-              <HeartHandshake className="w-3 h-3 text-brand-blue-light" />
-            </span>
+        {/* Header con el Logo Prominente y Grande sin bordes ni recuadros */}
+        <div className="flex flex-col items-start px-2 py-4 mb-4 border-b border-slate-800/60">
+          <div className="flex items-center space-x-3 mb-1">
+            <img
+              src="/logo.png"
+              alt="Streamcell Logo"
+              className="h-14 w-auto object-contain flex-shrink-0 filter drop-shadow-[0_4px_12px_rgba(139,92,246,0.3)] transition-transform hover:scale-105"
+            />
+            <div>
+              <h1 className="text-xl font-extrabold tracking-wider bg-gradient-to-r from-white via-slate-100 to-brand-purple-light bg-clip-text text-transparent">
+                Streamcell
+              </h1>
+              <span className="text-[11px] text-brand-purple-light font-medium flex items-center space-x-1">
+                <span>Tu aliado digital</span>
+                <HeartHandshake className="w-3.5 h-3.5 text-brand-blue-light" />
+              </span>
+            </div>
           </div>
         </div>
 
