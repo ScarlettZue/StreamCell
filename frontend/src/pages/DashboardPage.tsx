@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { MainLayout } from '../components/layout/MainLayout';
-import { Users, Tv, DollarSign, TrendingUp, AlertTriangle, CheckCircle2, HeartHandshake, Sparkles } from 'lucide-react';
+import { Users, Tv, DollarSign, TrendingUp, AlertTriangle, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
 import { saleService } from '../services/saleService';
 import { clientService } from '../services/clientService';
 import { accountService } from '../services/accountService';
@@ -30,24 +30,24 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <MainLayout
-      title="¡Hola, bienvenido a tu Dashboard! 👋"
-      subtitle="Aquí tienes el resumen actualizado de las ventas, inventario y finanzas de Streamcell"
+      title="Dashboard General"
+      subtitle="Resumen actualizado de ventas, inventario y finanzas de Streamcell"
     >
       <div className="space-y-8">
-        {/* Banner de Bienvenida Hogareño */}
+        {/* Banner de Bienvenida sin Emojis */}
         <div className="p-6 rounded-3xl bg-gradient-to-r from-brand-blue/10 via-brand-purple/10 to-slate-100 dark:to-slate-900 border border-slate-200 dark:border-brand-purple/30 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm dark:shadow-glass">
           <div className="space-y-1">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center space-x-2">
               <Sparkles className="w-5 h-5 text-brand-purple" />
-              <span>Estamos listos para hacer crecer tu negocio hoy</span>
+              <span>Gestión Eficiente e Inteligente</span>
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-300">
-              Mantén el control de tus clientes, renueva los perfiles a tiempo y envía mensajes amables por WhatsApp en 1 clic.
+              Mantén el control de tus clientes, renueva los perfiles a tiempo y envía avisos de pago por WhatsApp de forma organizada.
             </p>
           </div>
           <div className="px-4 py-2 rounded-xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/60 text-xs font-semibold text-brand-blue dark:text-brand-blue-light flex items-center space-x-2 shadow-sm">
-            <HeartHandshake className="w-4 h-4" />
-            <span>Atención cercana & eficiente</span>
+            <ShieldCheck className="w-4 h-4" />
+            <span>Atención Profesional</span>
           </div>
         </div>
 
@@ -55,7 +55,7 @@ export const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="glass-card p-6 rounded-2xl">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ingresos Totales</span>
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Ingresos Totales</span>
               <div className="w-10 h-10 rounded-xl bg-brand-blue/10 dark:bg-brand-blue/20 text-brand-blue flex items-center justify-center">
                 <DollarSign className="w-5 h-5" />
               </div>
@@ -66,7 +66,7 @@ export const DashboardPage: React.FC = () => {
 
           <div className="glass-card p-6 rounded-2xl">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ganancia Neta</span>
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Ganancia Neta</span>
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                 <TrendingUp className="w-5 h-5" />
               </div>
@@ -77,7 +77,7 @@ export const DashboardPage: React.FC = () => {
 
           <div className="glass-card p-6 rounded-2xl">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Clientes</span>
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Clientes</span>
               <div className="w-10 h-10 rounded-xl bg-brand-purple/10 dark:bg-brand-purple/20 text-brand-purple flex items-center justify-center">
                 <Users className="w-5 h-5" />
               </div>
@@ -86,13 +86,13 @@ export const DashboardPage: React.FC = () => {
             {totalDebt > 0 ? (
               <p className="text-xs text-rose-600 dark:text-rose-400 mt-2 font-bold">Por cobrar: {formatCurrency(totalDebt)}</p>
             ) : (
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 font-semibold">¡Todos al día!</p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 font-semibold">Cuentas al día</p>
             )}
           </div>
 
           <div className="glass-card p-6 rounded-2xl">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Stock Disponible</span>
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Stock Disponible</span>
               <div className="w-10 h-10 rounded-xl bg-cyan-500/10 dark:bg-brand-cyan/20 text-cyan-600 dark:text-brand-cyan flex items-center justify-center">
                 <Tv className="w-5 h-5" />
               </div>
@@ -136,8 +136,8 @@ export const DashboardPage: React.FC = () => {
                 <span>Gestión de Cobros & Calidez</span>
               </h4>
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                Recuerda que para mantener una relación cercana y amigable con tus clientes, el sistema genera mensajes
-                predeterminados saludando según la hora del día (<em>"Buenos días"</em>, <em>"Buenas tardes"</em>, <em>"Buenas noches"</em>)
+                Recuerda que para mantener una relación cercana y profesional con tus clientes, el sistema genera mensajes
+                predeterminados saludando según la hora del día (<em>Buenos días</em>, <em>Buenas tardes</em>, <em>Buenas noches</em>)
                 y te permite editar el texto antes de enviarlo a WhatsApp.
               </p>
             </div>

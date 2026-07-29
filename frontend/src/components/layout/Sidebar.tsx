@@ -7,7 +7,7 @@ import {
   AlertTriangle,
   ShoppingBag,
   LogOut,
-  HeartHandshake,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -25,7 +25,7 @@ export const Sidebar: React.FC = () => {
   return (
     <aside className="w-64 glass-panel h-screen fixed left-0 top-0 z-30 flex flex-col justify-between p-4 border-r border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
       <div>
-        {/* Header con el Logo Grande y Prominente */}
+        {/* Header con el Logo Grande y Prominente sin Emojis */}
         <div className="flex flex-col items-start px-2 py-3 mb-4 border-b border-slate-200/80 dark:border-slate-800/60">
           <div className="flex items-center space-x-3 mb-1">
             <img
@@ -39,7 +39,7 @@ export const Sidebar: React.FC = () => {
               </h1>
               <span className="text-[11px] text-brand-purple dark:text-brand-purple-light font-bold flex items-center space-x-1">
                 <span>Tu aliado digital</span>
-                <HeartHandshake className="w-3.5 h-3.5 text-brand-blue" />
+                <ShieldCheck className="w-3.5 h-3.5 text-brand-blue" />
               </span>
             </div>
           </div>
@@ -54,15 +54,15 @@ export const Sidebar: React.FC = () => {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
+                  `flex items-center space-x-3 px-3.5 py-3 rounded-xl text-sm transition-all duration-200 ${
                     isActive
-                      ? 'bg-brand-gradient text-white shadow-glow border border-white/10 font-bold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/40'
+                      ? 'bg-gradient-to-r from-brand-blue to-brand-purple text-white shadow-md font-bold'
+                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/50 font-medium'
                   }`
                 }
               >
-                <Icon className="w-5 h-5" />
-                <span>{item.name}</span>
+                <Icon className="w-5 h-5 flex-shrink-0" />
+                <span className="truncate">{item.name}</span>
               </NavLink>
             );
           })}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, AlertCircle, Loader2, HeartHandshake, Sun, Moon } from 'lucide-react';
+import { Lock, Mail, AlertCircle, Loader2, ShieldCheck, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -31,7 +31,7 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-dark-bg flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
-      {/* Botón Flotante para cambiar Tema Oscuro / Claro */}
+      {/* Botón Flotante para cambiar Tema Oscuro / Claro sin emojis */}
       <button
         onClick={toggleTheme}
         className="absolute top-6 right-6 p-3 rounded-2xl glass-panel border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm flex items-center space-x-2 text-xs font-semibold z-20"
@@ -39,7 +39,7 @@ export const LoginPage: React.FC = () => {
       >
         {theme === 'dark' ? (
           <>
-            <Sun className="w-4 h-4 text-amber-400" />
+            <Sun className="w-4 h-4 text-amber-500" />
             <span>Modo Claro</span>
           </>
         ) : (
@@ -55,7 +55,7 @@ export const LoginPage: React.FC = () => {
       <div className="absolute w-[500px] h-[500px] bg-brand-purple/15 dark:bg-brand-purple/25 rounded-full blur-[140px] -bottom-20 -right-20 pointer-events-none"></div>
 
       <div className="w-full max-w-md glass-panel p-8 rounded-3xl shadow-glass border border-slate-200 dark:border-slate-800 relative z-10 animate-fade-in">
-        {/* Header Logo Grande y Prominente sin recuadros ni bordes */}
+        {/* Header Logo Grande y Prominente sin emojis ni recuadros */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <img
@@ -65,11 +65,11 @@ export const LoginPage: React.FC = () => {
             />
           </div>
 
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-wide">¡Hola de nuevo!</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-wide">Iniciar Sesión</h1>
           <p className="text-sm text-slate-600 dark:text-slate-300 mt-1.5 flex items-center justify-center space-x-1.5">
-            <span>Te damos la bienvenida a</span>
+            <span>Bienvenida a</span>
             <strong className="text-brand-purple font-bold">Streamcell</strong>
-            <HeartHandshake className="w-4 h-4 text-brand-blue inline" />
+            <ShieldCheck className="w-4 h-4 text-brand-blue inline" />
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Ingresa tus datos para acceder a la gestión de tu negocio</p>
         </div>
