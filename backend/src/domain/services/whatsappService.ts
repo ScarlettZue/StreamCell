@@ -55,11 +55,21 @@ export class WhatsAppDomainService {
   }
 
   /**
-   * Limpia y normaliza el número de celular para WhatsApp con prefijo de Colombia (+57)
+   * Limpia y normaliza el número de celular para almacenar en la BD (10 dígitos colombianos sin prefijo 57)
    */
   public static normalizePhone(rawPhone: string): string {
-    const cleaned = rawPhone.replace(/\D/g, '');
-    if (cleaned.startsWith('57')) return cleaned;
+    let cleaned = rawPhone.replace(/\D/g, '');
+    if (cleaned.startsWith('57') && cleaned.length === 12) {
+      cleaned = cleaned.substring(2);
+    }
+    return cleaned;
+  }
+
+  /**
+   * Formatea el número con prefijo 57 para la URL oficial de WhatsApp (wa.me/57...)
+   */
+  public static formatForWhatsAppUrl(phone: string): string {
+    const cleaned = this.normalizePhone(phone);
     if (cleaned.length === 10) return `57${cleaned}`;
     return cleaned;
   }
@@ -70,16 +80,17 @@ export class WhatsAppDomainService {
   public static generateReminder(data: WhatsAppTemplateData): WhatsAppMessageResult {
     const greeting = this.getGreetingByTime();
     const dueDateFormatted = this.formatDateColombia(data.dueDate);
-    const phone = this.normalizePhone(data.phone);
+    const cleanPhone = this.normalizePhone(data.phone);
+    const phoneForUrl = this.formatForWhatsAppUrl(data.phone);
 
     const generatedMessage = `Hola ${greeting.toLowerCase()} ${data.clientName}, el día ${dueDateFormatted} terminó el mes de ${data.productName}, ¿deseas renovar el servicio?`;
     const encodedMessage = encodeURIComponent(generatedMessage);
-    const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/${phoneForUrl}?text=${encodedMessage}`;
 
     return {
       greeting,
       clientName: data.clientName,
-      phone,
+      phone: cleanPhone,
       productName: data.productName,
       dueDateFormatted,
       generatedMessage,
