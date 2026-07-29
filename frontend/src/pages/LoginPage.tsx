@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Lock, Mail, AlertCircle, Loader2 } from 'lucide-react';
+import { Lock, Mail, AlertCircle, Loader2, HeartHandshake } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const LoginPage: React.FC = () => {
@@ -21,7 +21,7 @@ export const LoginPage: React.FC = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al iniciar sesión. Verifica tus datos.');
+      setError(err.response?.data?.message || 'Error al ingresar. Por favor verifica tus credenciales.');
     } finally {
       setIsSubmitting(false);
     }
@@ -29,22 +29,28 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-dark-bg flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Fondo con brillo resplandeciente */}
-      <div className="absolute w-[500px] h-[500px] bg-brand-600/20 rounded-full blur-[120px] -top-20 -left-20 pointer-events-none"></div>
-      <div className="absolute w-[400px] h-[400px] bg-brand-accent/20 rounded-full blur-[100px] -bottom-20 -right-20 pointer-events-none"></div>
+      {/* Resplandor de fondo Azul & Morado */}
+      <div className="absolute w-[500px] h-[500px] bg-brand-blue/20 rounded-full blur-[130px] -top-20 -left-20 pointer-events-none"></div>
+      <div className="absolute w-[450px] h-[450px] bg-brand-purple/25 rounded-full blur-[130px] -bottom-20 -right-20 pointer-events-none"></div>
 
-      <div className="w-full max-w-md glass-panel p-8 rounded-3xl shadow-glass border border-slate-800/80 relative z-10 animate-fade-in">
-        {/* Header Logo */}
+      <div className="w-full max-w-md glass-panel p-8 rounded-3xl shadow-glass border border-slate-800 relative z-10 animate-fade-in">
+        {/* Header Logo & Saludo Hogareño */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 via-brand-500 to-brand-accent flex items-center justify-center shadow-glow mx-auto mb-4">
-            <Sparkles className="w-8 h-8 text-white" />
+          <div className="w-20 h-20 rounded-2xl border-2 border-white/10 shadow-glow bg-slate-900 flex items-center justify-center p-2 mx-auto mb-4">
+            <img src="/logo.png" alt="Logo Streamcell" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-2xl font-extrabold text-white tracking-wider">Streamcell</h1>
-          <p className="text-sm text-slate-400 mt-1">Plataforma Administrativa de Productos Digitales</p>
+
+          <h1 className="text-2xl font-extrabold text-white tracking-wide">¡Hola de nuevo!</h1>
+          <p className="text-sm text-slate-300 mt-1 flex items-center justify-center space-x-1.5">
+            <span>Te damos la bienvenida a</span>
+            <strong className="text-brand-purple-light font-bold">Streamcell</strong>
+            <HeartHandshake className="w-4 h-4 text-brand-blue-light inline" />
+          </p>
+          <p className="text-xs text-slate-400 mt-1">Ingresa tus datos para acceder a la gestión de tu negocio</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center space-x-3 text-rose-400 text-sm">
+          <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center space-x-3 text-rose-300 text-sm">
             <AlertCircle className="w-5 h-5 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -52,7 +58,7 @@ export const LoginPage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-2">Correo Electrónico</label>
+            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Correo Electrónico</label>
             <div className="relative">
               <Mail className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -61,13 +67,13 @@ export const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@streamcell.com"
-                className="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+                className="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-2">Contraseña</label>
+            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Contraseña</label>
             <div className="relative">
               <Lock className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -76,7 +82,7 @@ export const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+                className="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all"
               />
             </div>
           </div>
@@ -84,15 +90,15 @@ export const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-brand-600 via-brand-500 to-brand-700 text-white font-semibold text-sm shadow-glow hover:opacity-95 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+            className="w-full py-3.5 px-4 rounded-xl bg-brand-gradient text-white font-bold text-sm shadow-glow hover:bg-brand-gradient-hover active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Iniciando Sesión...</span>
+                <span>Abriendo tu panel...</span>
               </>
             ) : (
-              <span>Ingresar al Panel</span>
+              <span>Ingresar a Streamcell</span>
             )}
           </button>
         </form>

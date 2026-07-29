@@ -6,17 +6,16 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-          accent: '#06b6d4',
+          // Azul Primario (Seguridad & Confianza)
+          blue: '#3b82f6',
+          'blue-hover': '#2563eb',
+          'blue-light': '#60a5fa',
+          // Morado Primario (Streaming & Entretenimiento)
+          purple: '#8b5cf6',
+          'purple-hover': '#7c3aed',
+          'purple-light': '#a78bfa',
+          // Acento Cian & Estado
+          cyan: '#06b6d4',
           emerald: '#10b981',
           rose: '#f43f5e',
           amber: '#f59e0b',
@@ -33,8 +32,13 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        glass: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-        glow: '0 0 20px rgba(99, 102, 241, 0.35)',
+        glass: '0 8px 32px 0 rgba(0, 0, 0, 0.45)',
+        glow: '0 0 25px rgba(139, 92, 246, 0.35)',
+        'glow-blue': '0 0 25px rgba(59, 130, 246, 0.35)',
+      },
+      backgroundImage: {
+        'brand-gradient': 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+        'brand-gradient-hover': 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
       },
     },
   },
