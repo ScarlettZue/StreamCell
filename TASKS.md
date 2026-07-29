@@ -35,16 +35,22 @@
 ### 0.1.2 Autenticación & CRM Clientes
 - [x] Seed de usuario Administradora inicial (`POST /api/v1/auth/seed-admin`)
 - [x] Endpoint de Login (`POST /api/v1/auth/login`) con generación de JWT
-- [ ] API REST CRUD para Clientes (Alta con Nombre, Celular, `clientKey` y Saldo Deudor)
+- [x] API REST CRUD para Clientes (Alta con Nombre, Celular, `clientKey` e historial de deudas) (`/api/v1/clients`)
+- [x] Endpoint de cobro/liquidación de deudas (`POST /api/v1/clients/:id/pay-debt`)
 
 ### 0.1.3 Cuentas & Productos Multi-tipo
-- [ ] Controller y Use Cases para productos `MULTI_PROFILE`, `FULL_ACCOUNT` y `PERSONAL_INVITATION` (Canva con correo, Spotify con dirección)
-- [ ] Configuración de fechas de corte (+30d modificables)
+- [x] API REST para Catálogo y Categorías (`/api/v1/products`)
+- [x] API REST para Carga de Cuentas y Perfiles (`/api/v1/accounts`):
+  - Soporte para `MULTI_PROFILE` (Perfiles con PIN), `FULL_ACCOUNT` e `PERSONAL_INVITATION` (Canva con correo, Spotify con dirección).
+  - Cifrado automático de contraseñas de cuentas y PINs.
+  - Venta e inicialización directa de perfiles durante la carga de cuenta.
+- [x] Consulta de perfiles disponibles en inventario (`GET /api/v1/accounts/profiles/available`)
 
 ### 0.1.4 Retiros, Deudas & WhatsApp
-- [ ] API para Renovar, Retirar Sin Deuda o Retirar Con Deuda
-- [ ] Endpoint `POST /api/v1/whatsapp/generate-reminder` con mensaje editable y redirección a `wa.me`
+- [x] Renovaciones de servicio (+30 días por defecto, fechas y precios editables) (`POST /api/v1/subscriptions/:id/renew`)
+- [x] Retiro/Cancelación de servicio con opción `withDebt: false` (sin deuda) o `withDebt: true` (registra saldo deudor al cliente) (`POST /api/v1/subscriptions/:id/revoke`)
+- [x] Generación de mensajes de WhatsApp con saludo según la hora de Colombia y plantilla editable (`POST /api/v1/whatsapp/generate-reminder`)
 
 ### 0.1.5 Ventas & Precios Dinámicos
-- [ ] Modificación de `unitCost` y `unitPrice` por transacción
-- [ ] Registro de ventas y cálculo de ganancia neta en tiempo real
+- [x] Registro de Ventas directas con modificación en tiempo real de `unitCost` y `unitPrice` (`POST /api/v1/sales`)
+- [x] Métricas consolidadas de ingresos totales y ganancia neta (`GET /api/v1/sales`)
