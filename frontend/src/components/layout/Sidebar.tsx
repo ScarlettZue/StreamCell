@@ -25,11 +25,9 @@ export const Sidebar: React.FC = () => {
   return (
     <aside className="w-64 glass-panel h-screen fixed left-0 top-0 z-30 flex flex-col justify-between p-4 border-r border-slate-800/80">
       <div>
-        {/* Header con el Logo Oficial de Streamcell */}
-        <div className="flex items-center space-x-3 px-2 py-4 mb-6 border-b border-slate-800/60">
-          <div className="w-11 h-11 rounded-2xl overflow-hidden border border-brand-purple/40 shadow-glow bg-slate-900 flex items-center justify-center p-1">
-            <img src="/logo.png" alt="Logo Streamcell" className="w-full h-full object-contain" />
-          </div>
+        {/* Header con el Logo Oficial de Streamcell sin bordes ni contenedores */}
+        <div className="flex items-center space-x-3 px-2 py-3 mb-6 border-b border-slate-800/60">
+          <img src="/logo.png" alt="Streamcell Logo" className="h-11 w-auto object-contain flex-shrink-0" />
           <div>
             <h1 className="text-xl font-extrabold tracking-wider bg-gradient-to-r from-white via-slate-100 to-brand-purple-light bg-clip-text text-transparent">
               Streamcell

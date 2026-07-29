@@ -34,10 +34,10 @@ export const LoginPage: React.FC = () => {
       <div className="absolute w-[450px] h-[450px] bg-brand-purple/25 rounded-full blur-[130px] -bottom-20 -right-20 pointer-events-none"></div>
 
       <div className="w-full max-w-md glass-panel p-8 rounded-3xl shadow-glass border border-slate-800 relative z-10 animate-fade-in">
-        {/* Header Logo & Saludo Hogareño */}
+        {/* Header Logo limpio sin bordes ni recuadros */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 rounded-2xl border-2 border-white/10 shadow-glow bg-slate-900 flex items-center justify-center p-2 mx-auto mb-4">
-            <img src="/logo.png" alt="Logo Streamcell" className="w-full h-full object-contain" />
+          <div className="flex justify-center mb-3">
+            <img src="/logo.png" alt="Streamcell Logo" className="h-20 w-auto object-contain drop-shadow-md" />
           </div>
 
           <h1 className="text-2xl font-extrabold text-white tracking-wide">¡Hola de nuevo!</h1>
