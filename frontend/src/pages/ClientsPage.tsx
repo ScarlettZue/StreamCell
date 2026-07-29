@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '../components/layout/MainLayout';
 import { UserPlus, Search, DollarSign, AlertCircle, CheckCircle2, Loader2, X, Edit2, Trash2 } from 'lucide-react';
@@ -122,7 +123,7 @@ export const ClientsPage: React.FC = () => {
   return (
     <MainLayout title="Gestión de Clientes & Deudas" subtitle="CRM completo de Streamcell: crear, buscar, editar, liquidar deudas y eliminar clientes">
       <div className="space-y-6">
-        {/* Acciones e Insumos de Búsqueda */}
+        {/* Búsqueda y Acciones */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -249,250 +250,261 @@ export const ClientsPage: React.FC = () => {
           </table>
         </div>
 
-        {/* Modal Crear Cliente */}
-        {isCreateModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="glass-panel w-full max-w-md p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-glass relative">
-              <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                  <UserPlus className="w-5 h-5 text-purple-600" />
-                  <span>Nuevo Cliente</span>
-                </h3>
-                <button onClick={() => setIsCreateModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                  <X className="w-5 h-5" />
-                </button>
+        {/* Modal Crear Cliente con React Portal */}
+        {isCreateModalOpen &&
+          createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+              <div className="bg-white dark:bg-slate-900 w-full max-w-md p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+                <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <UserPlus className="w-5 h-5 text-purple-600" />
+                    <span>Nuevo Cliente</span>
+                  </h3>
+                  <button onClick={() => setIsCreateModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {modalError && (
+                  <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>{modalError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleCreateSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Nombre Completo</label>
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Ej. Ana María Pérez"
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-purple-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Número de Celular</label>
+                    <input
+                      type="text"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Ej. 300 123 4567"
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-purple-600"
+                    />
+                  </div>
+
+                  <div className="pt-3 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsCreateModalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={createMutation.isPending}
+                      className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-semibold shadow-md hover:opacity-95 flex items-center space-x-1"
+                    >
+                      {createMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                      <span>Guardar Cliente</span>
+                    </button>
+                  </div>
+                </form>
               </div>
+            </div>,
+            document.body
+          )}
 
-              {modalError && (
-                <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>{modalError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleCreateSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Nombre Completo</label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Ej. Ana María Pérez"
-                    className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-purple-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Número de Celular</label>
-                  <input
-                    type="text"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Ej. 300 123 4567"
-                    className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-purple-600"
-                  />
-                </div>
-
-                <div className="pt-3 flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={createMutation.isPending}
-                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-semibold shadow-md hover:opacity-95 flex items-center space-x-1"
-                  >
-                    {createMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>Guardar Cliente</span>
+        {/* Modal Editar Cliente con React Portal */}
+        {isEditModalOpen &&
+          selectedClient &&
+          createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+              <div className="bg-white dark:bg-slate-900 w-full max-w-md p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+                <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <Edit2 className="w-5 h-5 text-purple-600" />
+                    <span>Editar Cliente ({selectedClient.clientKey})</span>
+                  </h3>
+                  <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
-              </form>
-            </div>
-          </div>
-        )}
 
-        {/* Modal Editar Cliente */}
-        {isEditModalOpen && selectedClient && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="glass-panel w-full max-w-md p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-glass relative">
-              <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                  <Edit2 className="w-5 h-5 text-purple-600" />
-                  <span>Editar Cliente ({selectedClient.clientKey})</span>
-                </h3>
-                <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                  <X className="w-5 h-5" />
-                </button>
+                {modalError && (
+                  <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>{modalError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleUpdateSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Nombre Completo</label>
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-purple-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Número de Celular</label>
+                    <input
+                      type="text"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Ej. 312 662 2931"
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 font-mono"
+                    />
+                  </div>
+
+                  <div className="pt-3 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditModalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={updateMutation.isPending}
+                      className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-semibold shadow-md hover:opacity-95 flex items-center space-x-1"
+                    >
+                      {updateMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                      <span>Actualizar Cliente</span>
+                    </button>
+                  </div>
+                </form>
               </div>
+            </div>,
+            document.body
+          )}
 
-              {modalError && (
-                <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>{modalError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleUpdateSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Nombre Completo</label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-purple-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Número de Celular</label>
-                  <input
-                    type="text"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Ej. 312 662 2931"
-                    className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 font-mono"
-                  />
-                </div>
-
-                <div className="pt-3 flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={updateMutation.isPending}
-                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-semibold shadow-md hover:opacity-95 flex items-center space-x-1"
-                  >
-                    {updateMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>Actualizar Cliente</span>
+        {/* Modal Eliminar Cliente con React Portal */}
+        {isDeleteModalOpen &&
+          selectedClient &&
+          createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+              <div className="bg-white dark:bg-slate-900 w-full max-w-md p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+                <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <h3 className="text-lg font-bold text-rose-600 dark:text-rose-400 flex items-center space-x-2">
+                    <Trash2 className="w-5 h-5" />
+                    <span>Eliminar Cliente</span>
+                  </h3>
+                  <button onClick={() => setIsDeleteModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
-              </form>
-            </div>
-          </div>
-        )}
 
-        {/* Modal Eliminar Cliente */}
-        {isDeleteModalOpen && selectedClient && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="glass-panel w-full max-w-md p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-glass">
-              <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
-                <h3 className="text-lg font-bold text-rose-600 dark:text-rose-400 flex items-center space-x-2">
-                  <Trash2 className="w-5 h-5" />
-                  <span>Eliminar Cliente</span>
-                </h3>
-                <button onClick={() => setIsDeleteModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+                {modalError && (
+                  <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>{modalError}</span>
+                  </div>
+                )}
 
-              {modalError && (
-                <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>{modalError}</span>
-                </div>
-              )}
+                <div className="space-y-4">
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    ¿Estás segura de que deseas eliminar al cliente <strong className="text-slate-900 dark:text-white">{selectedClient.name}</strong> ({selectedClient.clientKey})?
+                    Esta acción no se puede deshacer.
+                  </p>
 
-              <div className="space-y-4">
-                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                  ¿Estás segura de que deseas eliminar al cliente <strong className="text-slate-900 dark:text-white">{selectedClient.name}</strong> ({selectedClient.clientKey})?
-                  Esta acción no se puede deshacer.
-                </p>
-
-                <div className="pt-3 flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsDeleteModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={() => deleteMutation.mutate()}
-                    disabled={deleteMutation.isPending}
-                    className="px-5 py-2 rounded-xl bg-rose-600 text-white text-xs font-semibold hover:bg-rose-500 flex items-center space-x-1"
-                  >
-                    {deleteMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>Confirmar Eliminación</span>
-                  </button>
+                  <div className="pt-3 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsDeleteModalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={() => deleteMutation.mutate()}
+                      disabled={deleteMutation.isPending}
+                      className="px-5 py-2 rounded-xl bg-rose-600 text-white text-xs font-semibold hover:bg-rose-500 flex items-center space-x-1"
+                    >
+                      {deleteMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                      <span>Confirmar Eliminación</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
+            </div>,
+            document.body
+          )}
 
-        {/* Modal Liquidar Deuda */}
-        {payModalOpen && selectedClient && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="glass-panel w-full max-w-md p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-glass">
-              <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                  <DollarSign className="w-5 h-5 text-emerald-500" />
-                  <span>Registrar Pago de Deuda</span>
-                </h3>
-                <button onClick={() => setPayModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                  <X className="w-5 h-5" />
-                </button>
+        {/* Modal Liquidar Deuda con React Portal */}
+        {payModalOpen &&
+          selectedClient &&
+          createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+              <div className="bg-white dark:bg-slate-900 w-full max-w-md p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+                <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <DollarSign className="w-5 h-5 text-emerald-500" />
+                    <span>Registrar Pago de Deuda</span>
+                  </h3>
+                  <button onClick={() => setPayModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {modalError && (
+                  <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>{modalError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handlePaySubmit} className="space-y-4">
+                  <div className="p-3 bg-slate-100 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+                    <p className="text-slate-600 dark:text-slate-400">Cliente: <strong className="text-slate-900 dark:text-white">{selectedClient.name}</strong></p>
+                    <p className="text-slate-600 dark:text-slate-400">Deuda actual: <strong className="text-rose-600 dark:text-rose-400">{formatCurrency(selectedClient.totalDebt)}</strong></p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Monto Pagado ($)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      step="500"
+                      required
+                      value={amountPaid}
+                      onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-mono font-bold"
+                    />
+                  </div>
+
+                  <div className="pt-3 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={() => setPayModalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={payDebtMutation.isPending}
+                      className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-500 flex items-center space-x-1"
+                    >
+                      {payDebtMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                      <span>Confirmar Pago</span>
+                    </button>
+                  </div>
+                </form>
               </div>
-
-              {modalError && (
-                <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>{modalError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handlePaySubmit} className="space-y-4">
-                <div className="p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
-                  <p className="text-slate-600 dark:text-slate-400">Cliente: <strong className="text-slate-900 dark:text-white">{selectedClient.name}</strong></p>
-                  <p className="text-slate-600 dark:text-slate-400">Deuda actual: <strong className="text-rose-600 dark:text-rose-400">{formatCurrency(selectedClient.totalDebt)}</strong></p>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Monto Pagado ($)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    step="500"
-                    required
-                    value={amountPaid}
-                    onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-mono font-bold"
-                  />
-                </div>
-
-                <div className="pt-3 flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setPayModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={payDebtMutation.isPending}
-                    className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-500 flex items-center space-x-1"
-                  >
-                    {payDebtMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>Confirmar Pago</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+            </div>,
+            document.body
+          )}
       </div>
     </MainLayout>
   );
