@@ -20,9 +20,6 @@ const payDebtSchema = z.object({
 });
 
 export class ClientController {
-  /**
-   * Genera un código cliente legible incremental (ej: CLI-0001, CLI-0002)
-   */
   private static async generateClientKey(): Promise<string> {
     const count = await prisma.client.count();
     const nextNum = (count + 1).toString().padStart(4, '0');
@@ -152,6 +149,23 @@ export class ClientController {
     }
   }
 
+  public static async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { id } = req.params;
+
+      await prisma.client.delete({
+        where: { id },
+      });
+
+      res.json({
+        success: true,
+        message: 'Cliente eliminado exitosamente',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   public static async payDebt(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
@@ -169,7 +183,6 @@ export class ClientController {
 
       const newDebt = Math.max(0, currentDebt - amountPaid);
 
-      // Actualizar cliente y marcar deudas pagadas
       const updatedClient = await prisma.$transaction(async (tx) => {
         await tx.debtRecord.updateMany({
           where: { clientId: id, isPaid: false },

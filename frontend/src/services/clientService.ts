@@ -23,6 +23,10 @@ export const clientService = {
     return res.data.data;
   },
 
+  async deleteClient(id: string): Promise<void> {
+    await api.delete(`/clients/${id}`);
+  },
+
   async payDebt(id: string, amountPaid: number, notes?: string): Promise<IClient> {
     const res = await api.post<ApiResponse<IClient>>(`/clients/${id}/pay-debt`, { amountPaid, notes });
     return res.data.data;

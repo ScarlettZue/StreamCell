@@ -10,4 +10,5 @@ clientRouter.post('/', ClientController.create);
 clientRouter.get('/', ClientController.getAll);
 clientRouter.get('/:id', ClientController.getById);
 clientRouter.put('/:id', ClientController.update);
+clientRouter.delete('/:id', ClientController.delete);
 clientRouter.post('/:id/pay-debt', ClientController.payDebt);
