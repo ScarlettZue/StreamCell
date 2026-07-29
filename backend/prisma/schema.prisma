@@ -1,0 +1,218 @@
+// Prisma Schema - Streamcell Database Model
+// Motor: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------
+// ENUMS DE NAVEGACIÓN Y ESTADOS
+// ------------------------------------
+
+enum Role {
+  ADMIN
+}
+
+enum ProductType {
+  MULTI_PROFILE
+  FULL_ACCOUNT
+  PERSONAL_INVITATION
+}
+
+enum AccountStatus {
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+}
+
+enum ProfileStatus {
+  AVAILABLE
+  SOLD
+  DISABLED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED_NO_DEBT
+  CANCELLED_WITH_DEBT
+}
+
+enum SaleStatus {
+  COMPLETED
+  CANCELLED
+}
+
+// ------------------------------------
+// MODELOS DE DOMINIO
+// ------------------------------------
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sales Sale[]
+
+  @@map("users")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            String      @id @default(uuid())
+  name          String
+  categoryId    String
+  type          ProductType @default(MULTI_PROFILE)
+  defaultCost   Decimal     @db.Decimal(10, 2)
+  defaultPrice  Decimal     @db.Decimal(10, 2)
+  profilesCount Int         @default(1)
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  category Category  @relation(fields: [categoryId], references: [id])
+  accounts Account[]
+
+  @@map("products")
+}
+
+model Account {
+  id        String        @id @default(uuid())
+  productId String
+  email     String
+  password  String?
+  startDate DateTime      @default(now())
+  dueDate   DateTime
+  status    AccountStatus @default(ACTIVE)
+  notes     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  product  Product          @relation(fields: [productId], references: [id])
+  profiles AccountProfile[]
+
+  @@map("accounts")
+}
+
+model AccountProfile {
+  id              String        @id @default(uuid())
+  accountId       String
+  profileName     String
+  hasPin          Boolean       @default(false)
+  pin             String?
+  userEmail       String?
+  spotifyUsername String?
+  familyAddress   String?
+  status          ProfileStatus @default(AVAILABLE)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  account       Account               @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  subscriptions ProfileSubscription[]
+  saleDetails   SaleDetail[]
+
+  @@map("account_profiles")
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  clientKey String   @unique
+  name      String
+  phone     String
+  totalDebt Decimal  @default(0.00) @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subscriptions ProfileSubscription[]
+  debts         DebtRecord[]
+  sales         Sale[]
+
+  @@map("clients")
+}
+
+model ProfileSubscription {
+  id               String             @id @default(uuid())
+  accountProfileId String
+  clientId         String
+  serviceStartDate DateTime           @default(now())
+  serviceEndDate   DateTime
+  status           SubscriptionStatus @default(ACTIVE)
+  debtAmount       Decimal            @default(0.00) @db.Decimal(10, 2)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  profile AccountProfile @relation(fields: [accountProfileId], references: [id])
+  client  Client         @relation(fields: [clientId], references: [id])
+  debts   DebtRecord[]
+
+  @@map("profile_subscriptions")
+}
+
+model DebtRecord {
+  id             String   @id @default(uuid())
+  clientId       String
+  subscriptionId String?
+  amount         Decimal  @db.Decimal(10, 2)
+  reason         String
+  isPaid         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  client       Client               @relation(fields: [clientId], references: [id])
+  subscription ProfileSubscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@map("debt_records")
+}
+
+model Sale {
+  id          String     @id @default(uuid())
+  code        String     @unique
+  clientId    String
+  userId      String
+  totalAmount Decimal    @db.Decimal(10, 2)
+  totalCost   Decimal    @db.Decimal(10, 2)
+  netProfit   Decimal    @db.Decimal(10, 2)
+  status      SaleStatus @default(COMPLETED)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  client  Client       @relation(fields: [clientId], references: [id])
+  user    User         @relation(fields: [userId], references: [id])
+  details SaleDetail[]
+
+  @@map("sales")
+}
+
+model SaleDetail {
+  id               String   @id @default(uuid())
+  saleId           String
+  accountProfileId String
+  unitCost         Decimal  @db.Decimal(10, 2)
+  unitPrice        Decimal  @db.Decimal(10, 2)
+  subtotalProfit   Decimal  @db.Decimal(10, 2)
+  createdAt        DateTime @default(now())
+
+  sale    Sale           @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  profile AccountProfile @relation(fields: [accountProfileId], references: [id])
+
+  @@map("sale_details")
+}
