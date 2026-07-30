@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '../components/layout/MainLayout';
 import { Plus, Eye, EyeOff, Loader2, X, Sparkles } from 'lucide-react';
@@ -225,212 +226,233 @@ export const AccountsPage: React.FC = () => {
         )}
 
         {/* Modal Registrar Cuenta (Wizard) */}
-        {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-fade-in">
-            <div className="glass-panel w-full max-w-2xl p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-glass my-8 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                  <Sparkles className="w-5 h-5 text-brand-purple" />
-                  <span>Registrar Nueva Cuenta & Perfiles</span>
-                </h3>
-                <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Paso 1: Selección de Producto y Credenciales */}
-                <div className="space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-brand-purple border-b border-slate-200 dark:border-slate-800 pb-1">
-                    Paso 1: Datos Principales de la Cuenta
-                  </h4>
-
+        {isModalOpen &&
+          createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto animate-fade-in">
+              <div className="glass-panel w-full max-w-2xl p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-glass my-8 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <Sparkles className="w-5 h-5 text-brand-purple" />
+                    <span>Registrar Nueva Cuenta & Perfiles</span>
+                  </h3>
+                  <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Producto / Servicio</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                      Servicio / Plataforma
+                    </label>
                     <select
-                      required
                       value={productId}
                       onChange={(e) => setProductId(e.target.value)}
-                      className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple"
+                      required
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple"
                     >
-                      <option value="">Selecciona un producto del catálogo...</option>
-                      {products?.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} ({p.type})
+                      <option value="">Selecciona una plataforma...</option>
+                      {products?.map((prod) => (
+                        <option key={prod.id} value={prod.id}>
+                          {prod.name} ({prod.category?.name || 'Streaming'}) - Max {prod.profilesCount} perfiles
                         </option>
                       ))}
                     </select>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Correo de la Cuenta</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                        Email de la Cuenta
+                      </label>
                       <input
-                        type="text"
+                        type="email"
                         required
+                        placeholder="cuenta@plataforma.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="cuenta@streamcell.com"
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple"
                       />
                     </div>
-
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Contraseña (Opcional)</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                        Contraseña (Opcional)
+                      </label>
                       <input
-                        type="password"
+                        type="text"
+                        placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple font-mono"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Fecha Registro/Inicio</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                        Fecha de Compra
+                      </label>
                       <input
                         type="date"
+                        required
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple"
                       />
                     </div>
-
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Fecha de Corte (30 días)</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                        Fecha de Vencimiento
+                      </label>
                       <input
                         type="date"
+                        required
                         value={dueDate}
                         onChange={(e) => setDueDate(e.target.value)}
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-purple"
                       />
                     </div>
                   </div>
-                </div>
 
-                {/* Paso 2: Perfiles */}
-                <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
-                  <div className="flex justify-between items-center">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-brand-purple">
-                      Paso 2: Perfiles / Cupos
-                    </h4>
-                    <button
-                      type="button"
-                      onClick={handleAddProfileField}
-                      className="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-brand-purple-light hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg text-xs font-semibold"
-                    >
-                      + Añadir Perfil
-                    </button>
-                  </div>
+                  {/* Configuración Dinámica de Perfiles */}
+                  <div className="mt-6 border-t border-slate-200 dark:border-slate-800 pt-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
+                        Configuración de Perfiles ({profiles.length})
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={handleAddProfileField}
+                        className="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-purple-300 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg text-xs font-semibold"
+                      >
+                        + Añadir Perfil
+                      </button>
+                    </div>
 
-                  <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                    {profiles.map((p, idx) => (
-                      <div key={idx} className="p-3 bg-slate-100 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          <input
-                            type="text"
-                            value={p.profileName}
-                            onChange={(e) => {
-                              const updated = [...profiles];
-                              updated[idx].profileName = e.target.value;
-                              setProfiles(updated);
-                            }}
-                            placeholder="Nombre perfil"
-                            className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white"
-                          />
-
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              checked={p.hasPin}
-                              onChange={(e) => {
-                                const updated = [...profiles];
-                                updated[idx].hasPin = e.target.checked;
-                                setProfiles(updated);
-                              }}
-                              className="rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-brand-purple"
-                            />
-                            <span className="text-xs text-slate-700 dark:text-slate-300">¿Tiene PIN?</span>
+                    <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                      {profiles.map((p, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3 bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-xl space-y-2 text-xs"
+                        >
+                          <div className="flex items-center justify-between font-semibold text-slate-800 dark:text-slate-200">
+                            <span>Perfil #{idx + 1}</span>
+                            <div className="flex items-center space-x-2">
+                              <label className="flex items-center space-x-1 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={p.hasPin}
+                                  onChange={(e) => {
+                                    const updated = [...profiles];
+                                    updated[idx].hasPin = e.target.checked;
+                                    setProfiles(updated);
+                                  }}
+                                />
+                                <span>¿Tiene PIN?</span>
+                              </label>
+                              {p.hasPin && (
+                                <input
+                                  type="text"
+                                  placeholder="PIN (4 dígitos)"
+                                  maxLength={6}
+                                  value={p.pin}
+                                  onChange={(e) => {
+                                    const updated = [...profiles];
+                                    updated[idx].pin = e.target.value;
+                                    setProfiles(updated);
+                                  }}
+                                  className="w-24 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded px-2 py-0.5 text-xs text-slate-900 dark:text-white font-mono"
+                                />
+                              )}
+                            </div>
                           </div>
 
-                          {p.hasPin && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <input
                               type="text"
-                              maxLength={6}
-                              value={p.pin}
+                              placeholder="Nombre del Perfil"
+                              value={p.profileName}
                               onChange={(e) => {
                                 const updated = [...profiles];
-                                updated[idx].pin = e.target.value;
+                                updated[idx].profileName = e.target.value;
                                 setProfiles(updated);
                               }}
-                              placeholder="Clave PIN"
-                              className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white font-mono"
+                              className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white"
                             />
-                          )}
-                        </div>
-
-                        {/* Asignar vendido opcional */}
-                        <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center space-x-4">
-                          <label className="flex items-center space-x-2 text-xs text-amber-700 dark:text-amber-300 font-semibold">
                             <input
-                              type="checkbox"
-                              checked={p.isSold}
+                              type="text"
+                              placeholder="Usuario / Email / Correo del cliente"
+                              value={p.userEmail}
                               onChange={(e) => {
                                 const updated = [...profiles];
-                                updated[idx].isSold = e.target.checked;
+                                updated[idx].userEmail = e.target.value;
                                 setProfiles(updated);
                               }}
+                              className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white"
                             />
-                            <span>¿Este perfil ya está vendido?</span>
-                          </label>
+                          </div>
 
-                          {p.isSold && (
-                            <select
-                              value={p.clientId}
-                              onChange={(e) => {
-                                const updated = [...profiles];
-                                updated[idx].clientId = e.target.value;
-                                setProfiles(updated);
-                              }}
-                              className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1 text-xs text-slate-900 dark:text-white flex-1"
-                            >
-                              <option value="">Seleccionar Cliente...</option>
-                              {clients?.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                  {c.name} ({c.phone})
-                                </option>
-                              ))}
-                            </select>
-                          )}
+                          {/* Venta rápida del perfil */}
+                          <div className="flex items-center space-x-3 pt-1 border-t border-slate-200/50 dark:border-slate-700/40">
+                            <label className="flex items-center space-x-1.5 cursor-pointer text-slate-600 dark:text-slate-400">
+                              <input
+                                type="checkbox"
+                                checked={p.isSold}
+                                onChange={(e) => {
+                                  const updated = [...profiles];
+                                  updated[idx].isSold = e.target.checked;
+                                  setProfiles(updated);
+                                }}
+                              />
+                              <span>¿Este perfil ya está vendido?</span>
+                            </label>
+
+                            {p.isSold && (
+                              <select
+                                value={p.clientId}
+                                onChange={(e) => {
+                                  const updated = [...profiles];
+                                  updated[idx].clientId = e.target.value;
+                                  setProfiles(updated);
+                                }}
+                                className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1 text-xs text-slate-900 dark:text-white flex-1"
+                              >
+                                <option value="">Seleccionar Cliente...</option>
+                                {clients?.map((c) => (
+                                  <option key={c.id} value={c.id}>
+                                    {c.name} ({c.phone})
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                <div className="pt-4 flex justify-end space-x-3 border-t border-slate-200 dark:border-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={createAccountMutation.isPending}
-                    className="px-6 py-2.5 rounded-xl bg-brand-gradient text-white text-xs font-semibold shadow-glow hover:bg-brand-gradient-hover flex items-center space-x-1"
-                  >
-                    {createAccountMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>Guardar Cuenta Completa</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+                  <div className="pt-4 flex justify-end space-x-3 border-t border-slate-200 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={createAccountMutation.isPending}
+                      className="px-6 py-2.5 rounded-xl bg-brand-gradient text-white text-xs font-semibold shadow-glow hover:bg-brand-gradient-hover flex items-center space-x-1"
+                    >
+                      {createAccountMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                      <span>Guardar Cuenta Completa</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>,
+            document.body
+          )}
       </div>
     </MainLayout>
   );

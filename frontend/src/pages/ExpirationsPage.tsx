@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '../components/layout/MainLayout';
 import { AlertTriangle, MessageSquare, RefreshCw, UserX, Clock, CheckCircle2, Loader2, X, Send } from 'lucide-react';
@@ -236,198 +237,207 @@ export const ExpirationsPage: React.FC = () => {
         </div>
 
         {/* Modal WhatsApp Editable */}
-        {wspModalOpen && reminderData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="glass-panel w-full max-w-lg p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-glass">
-              <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                  <MessageSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  <span>Enviar Recordatorio por WhatsApp</span>
-                </h3>
-                <button onClick={() => setWspModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div className="p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1">
-                  <p className="text-slate-600 dark:text-slate-400">Cliente: <strong className="text-slate-900 dark:text-white">{reminderData.clientName}</strong></p>
-                  <p className="text-slate-600 dark:text-slate-400">Saludo Detectado (COT): <strong className="text-brand-purple dark:text-brand-purple-light">{reminderData.greeting}</strong></p>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">Mensaje Editable antes de enviar</label>
-                  <textarea
-                    rows={4}
-                    value={editedMessage}
-                    onChange={(e) => setEditedMessage(e.target.value)}
-                    className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-sans"
-                  ></textarea>
-                </div>
-
-                <div className="pt-3 flex justify-end space-x-3 border-t border-slate-200 dark:border-slate-800">
-                  <button
-                    onClick={() => setWspModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={handleSendWhatsApp}
-                    className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-500 shadow-glow flex items-center space-x-2"
-                  >
-                    <Send className="w-4 h-4" />
-                    <span>Abrir Chat de WhatsApp</span>
+        {wspModalOpen &&
+          reminderData &&
+          createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+              <div className="glass-panel w-full max-w-lg p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-glass">
+                <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <MessageSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    <span>Enviar Recordatorio por WhatsApp</span>
+                  </h3>
+                  <button onClick={() => setWspModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
+
+                <div className="space-y-4">
+                  <div className="p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1">
+                    <p className="text-slate-600 dark:text-slate-400">Cliente: <strong className="text-slate-900 dark:text-white">{reminderData.clientName}</strong></p>
+                    <p className="text-slate-600 dark:text-slate-400">Saludo Detectado (COT): <strong className="text-brand-purple dark:text-brand-purple-light">{reminderData.greeting}</strong></p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">Mensaje Editable antes de enviar</label>
+                    <textarea
+                      rows={4}
+                      value={editedMessage}
+                      onChange={(e) => setEditedMessage(e.target.value)}
+                      className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-sans"
+                    ></textarea>
+                  </div>
+
+                  <div className="pt-3 flex justify-end space-x-3 border-t border-slate-200 dark:border-slate-800">
+                    <button
+                      onClick={() => setWspModalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleSendWhatsApp}
+                      className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-500 shadow-glow flex items-center space-x-2"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>Abrir Chat de WhatsApp</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            </div>,
+            document.body
+          )}
 
         {/* Modal Retirar Servicio */}
-        {revokeModalOpen && selectedSub && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="glass-panel w-full max-w-md p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-glass">
-              <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                  <UserX className="w-5 h-5 text-rose-600 dark:text-rose-400" />
-                  <span>Retirar Servicio de Perfil</span>
-                </h3>
-                <button onClick={() => setRevokeModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                  <X className="w-5 h-5" />
-                </button>
+        {revokeModalOpen &&
+          selectedSub &&
+          createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+              <div className="glass-panel w-full max-w-md p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-glass">
+                <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <UserX className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                    <span>Retirar Servicio de Perfil</span>
+                  </h3>
+                  <button onClick={() => setRevokeModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={(e) => { e.preventDefault(); revokeMutation.mutate(); }} className="space-y-4">
+                  <div className="p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
+                    <p className="text-slate-600 dark:text-slate-400">Cliente: <strong className="text-slate-900 dark:text-white">{selectedSub.client?.name}</strong></p>
+                    <p className="text-slate-600 dark:text-slate-400">Perfil: <strong className="text-brand-purple dark:text-brand-purple-light">{selectedSub.profile?.account?.product?.name} ({selectedSub.profile?.profileName})</strong></p>
+                  </div>
+
+                  <div className="space-y-3 p-3 bg-slate-100 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <label className="flex items-center space-x-2 text-xs font-bold text-rose-700 dark:text-rose-300">
+                      <input
+                        type="checkbox"
+                        checked={withDebt}
+                        onChange={(e) => setWithDebt(e.target.checked)}
+                        className="rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-rose-600"
+                      />
+                      <span>¿Registrar saldo deudor al cliente por atraso?</span>
+                    </label>
+
+                    {withDebt && (
+                      <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Monto de Deuda ($)</label>
+                          <input
+                            type="number"
+                            step="500"
+                            required
+                            value={debtAmount}
+                            onChange={(e) => setDebtAmount(parseFloat(e.target.value) || 0)}
+                            className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-rose-700 dark:text-rose-400 font-mono font-bold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Motivo del Retiro</label>
+                          <input
+                            type="text"
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                            placeholder="Atraso de días en pago de mensualidad"
+                            className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-3 flex justify-end space-x-3 border-t border-slate-200 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setRevokeModalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={revokeMutation.isPending}
+                      className="px-5 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-semibold hover:bg-rose-500 flex items-center space-x-1"
+                    >
+                      {revokeMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                      <span>Confirmar Retiro</span>
+                    </button>
+                  </div>
+                </form>
               </div>
-
-              <form onSubmit={(e) => { e.preventDefault(); revokeMutation.mutate(); }} className="space-y-4">
-                <div className="p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
-                  <p className="text-slate-600 dark:text-slate-400">Cliente: <strong className="text-slate-900 dark:text-white">{selectedSub.client?.name}</strong></p>
-                  <p className="text-slate-600 dark:text-slate-400">Perfil: <strong className="text-brand-purple dark:text-brand-purple-light">{selectedSub.profile?.account?.product?.name} ({selectedSub.profile?.profileName})</strong></p>
-                </div>
-
-                <div className="space-y-3 p-3 bg-slate-100 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <label className="flex items-center space-x-2 text-xs font-bold text-rose-700 dark:text-rose-300">
-                    <input
-                      type="checkbox"
-                      checked={withDebt}
-                      onChange={(e) => setWithDebt(e.target.checked)}
-                      className="rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-rose-600"
-                    />
-                    <span>¿Registrar saldo deudor al cliente por atraso?</span>
-                  </label>
-
-                  {withDebt && (
-                    <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Monto de Deuda ($)</label>
-                        <input
-                          type="number"
-                          step="500"
-                          required
-                          value={debtAmount}
-                          onChange={(e) => setDebtAmount(parseFloat(e.target.value) || 0)}
-                          className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-rose-700 dark:text-rose-400 font-mono font-bold"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Motivo del Retiro</label>
-                        <input
-                          type="text"
-                          value={reason}
-                          onChange={(e) => setReason(e.target.value)}
-                          placeholder="Atraso de días en pago de mensualidad"
-                          className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-3 flex justify-end space-x-3 border-t border-slate-200 dark:border-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setRevokeModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={revokeMutation.isPending}
-                    className="px-5 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-semibold hover:bg-rose-500 flex items-center space-x-1"
-                  >
-                    {revokeMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>Confirmar Retiro</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+            </div>,
+            document.body
+          )}
 
         {/* Modal Renovar */}
-        {renewModalOpen && selectedSub && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="glass-panel w-full max-w-md p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-glass">
-              <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                  <RefreshCw className="w-5 h-5 text-brand-purple" />
-                  <span>Renovar Servicio (+30 Días)</span>
-                </h3>
-                <button onClick={() => setRenewModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                  <X className="w-5 h-5" />
-                </button>
+        {renewModalOpen &&
+          selectedSub &&
+          createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+              <div className="glass-panel w-full max-w-md p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-glass">
+                <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <RefreshCw className="w-5 h-5 text-brand-purple" />
+                    <span>Renovar Servicio (+30 Días)</span>
+                  </h3>
+                  <button onClick={() => setRenewModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={(e) => { e.preventDefault(); renewMutation.mutate(); }} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4 p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Costo Real ($)</label>
+                      <input
+                        type="number"
+                        step="500"
+                        required
+                        value={saleCost}
+                        onChange={(e) => setSaleCost(parseFloat(e.target.value) || 0)}
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white font-mono font-bold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Precio Cobrado ($)</label>
+                      <input
+                        type="number"
+                        step="500"
+                        required
+                        value={salePrice}
+                        onChange={(e) => setSalePrice(parseFloat(e.target.value) || 0)}
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400 font-mono font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-3 flex justify-end space-x-3 border-t border-slate-200 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setRenewModalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={renewMutation.isPending}
+                      className="px-5 py-2.5 rounded-xl bg-brand-gradient text-white text-xs font-semibold hover:bg-brand-gradient-hover shadow-glow flex items-center space-x-1"
+                    >
+                      {renewMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                      <span>Confirmar Renovación</span>
+                    </button>
+                  </div>
+                </form>
               </div>
-
-              <form onSubmit={(e) => { e.preventDefault(); renewMutation.mutate(); }} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Costo Real ($)</label>
-                    <input
-                      type="number"
-                      step="500"
-                      required
-                      value={saleCost}
-                      onChange={(e) => setSaleCost(parseFloat(e.target.value) || 0)}
-                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white font-mono font-bold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Precio Cobrado ($)</label>
-                    <input
-                      type="number"
-                      step="500"
-                      required
-                      value={salePrice}
-                      onChange={(e) => setSalePrice(parseFloat(e.target.value) || 0)}
-                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400 font-mono font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-3 flex justify-end space-x-3 border-t border-slate-200 dark:border-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setRenewModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={renewMutation.isPending}
-                    className="px-5 py-2.5 rounded-xl bg-brand-gradient text-white text-xs font-semibold hover:bg-brand-gradient-hover shadow-glow flex items-center space-x-1"
-                  >
-                    {renewMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>Confirmar Renovación</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+            </div>,
+            document.body
+          )}
       </div>
     </MainLayout>
   );

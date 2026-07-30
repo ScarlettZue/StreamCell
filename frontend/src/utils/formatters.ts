@@ -27,6 +27,27 @@ export const formatDateCO = (dateInput: string | Date): string => {
 };
 
 /**
+ * Limpia el número de teléfono para guardar 10 dígitos sin prefijo
+ */
+export const cleanPhoneNumber = (rawPhone: string): string => {
+  let cleaned = rawPhone.replace(/\D/g, '');
+  if (cleaned.startsWith('57') && cleaned.length === 12) {
+    cleaned = cleaned.substring(2);
+  }
+  return cleaned;
+};
+
+/**
+ * Genera el enlace oficial de WhatsApp anteponiendo dinámicamente el prefijo 57
+ */
+export const buildWhatsAppLink = (phone: string, message?: string): string => {
+  const cleaned = cleanPhoneNumber(phone);
+  const fullPhone = cleaned.length === 10 ? `57${cleaned}` : cleaned;
+  const encodedMsg = message ? `?text=${encodeURIComponent(message)}` : '';
+  return `https://wa.me/${fullPhone}${encodedMsg}`;
+};
+
+/**
  * Calcula los días restantes o de atraso para una fecha de vencimiento
  */
 export const getDaysRemaining = (dueDateInput: string | Date): number => {
