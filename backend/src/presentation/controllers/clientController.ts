@@ -107,7 +107,19 @@ export class ClientController {
           },
           sales: {
             orderBy: { createdAt: 'desc' },
-            take: 10,
+            include: {
+              details: {
+                include: {
+                  profile: {
+                    include: {
+                      account: {
+                        include: { product: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       });

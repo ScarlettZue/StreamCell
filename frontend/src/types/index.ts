@@ -93,6 +93,7 @@ export interface IClient {
   createdAt: string;
   subscriptions?: IProfileSubscription[];
   debts?: IDebtRecord[];
+  sales?: ISale[];
   _count?: {
     subscriptions: number;
     sales: number;
