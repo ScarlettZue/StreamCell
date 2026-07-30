@@ -1,7 +1,11 @@
 ## MODIFIED Requirements
 
 ### Requirement: Registro de Clientes con ID Consecutivo CLI-XXXX
-The system MUST store a clean 10-digit phone number for each customer, allow searching strictly by Name or Mobile Phone, and hide the CLI-XXXX ID from the main list table UI.
+The system MUST automatically generate a consecutive ID with format CLI-XXXX (e.g. CLI-0001) for each new customer, store a clean 10-digit phone number, allow searching strictly by Name or Mobile Phone, and hide the CLI-XXXX ID from the main list table UI.
+
+#### Scenario: Creación exitosa de un cliente
+- **WHEN** el usuario registra un nuevo cliente especificando nombre y número móvil de 10 dígitos
+- **THEN** el sistema asigna el siguiente ID consecutivo CLI-XXXX, limpia el número celular y retorna el cliente registrado
 
 #### Scenario: Búsqueda de cliente por Nombre o Celular sin ID visible
 - **WHEN** el usuario consulta o busca en el listado principal de clientes
