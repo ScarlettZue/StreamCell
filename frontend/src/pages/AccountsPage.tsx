@@ -155,7 +155,7 @@ export const AccountsPage: React.FC = () => {
             No hay cuentas registradas en el inventario. Haz clic en "Registrar Nueva Cuenta" para comenzar.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-24 md:pb-6">
             {accounts?.map((acc) => (
               <div key={acc.id} className="glass-panel p-6 rounded-2xl">
                 <div className="flex justify-between items-start mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">

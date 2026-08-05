@@ -125,8 +125,8 @@ export const SalesPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Tabla de Historial de Ventas */}
-        <div className="glass-panel rounded-2xl overflow-hidden shadow-sm">
+        {/* Tabla de Historial de Ventas - Escritorio */}
+        <div className="hidden sm:block glass-panel rounded-2xl overflow-hidden shadow-sm">
           <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
             <thead className="bg-slate-100 dark:bg-slate-900/80 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
               <tr>
@@ -158,7 +158,7 @@ export const SalesPage: React.FC = () => {
                   const detail = sale.details?.[0];
                   return (
                     <tr key={sale.id} className="hover:bg-slate-100/60 dark:hover:bg-slate-800/30 transition-colors">
-                      <td className="px-6 py-4 font-mono text-xs font-bold text-brand-purple">{sale.code}</td>
+                      <td className="px-6 py-4 font-mono text-xs font-bold text-purple-600 dark:text-purple-400">{sale.code}</td>
                       <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">{sale.client?.name || 'Cliente'}</td>
                       <td className="px-6 py-4 text-xs">
                         <span className="font-bold text-slate-800 dark:text-slate-200">{detail?.profile?.account?.product?.name}</span>
@@ -174,6 +174,48 @@ export const SalesPage: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Tarjetas de Ventas - Móvil */}
+        <div className="sm:hidden space-y-3 pb-24">
+          {isLoading ? (
+            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+              <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+              Cargando ventas...
+            </div>
+          ) : salesInfo?.sales.length === 0 ? (
+            <div className="text-center py-8 text-slate-500 dark:text-slate-400 font-medium">
+              No se han registrado ventas aún.
+            </div>
+          ) : (
+            salesInfo?.sales.map((sale) => {
+              const detail = sale.details?.[0];
+              return (
+                <div key={sale.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 text-xs shadow-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="font-mono font-bold text-purple-600 dark:text-purple-400">#{sale.code}</span>
+                    <span className="font-bold text-slate-900 dark:text-white text-sm">{formatCurrency(sale.totalAmount)}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-slate-700 dark:text-slate-300">
+                    <span className="font-bold">{sale.client?.name || 'Cliente'}</span>
+                    <span className="text-[11px] text-slate-500">{formatDateCO(sale.createdAt)}</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                    <div>
+                      <span className="font-bold text-slate-900 dark:text-white block">{detail?.profile?.account?.product?.name || 'Servicio'}</span>
+                      <span className="text-[11px] text-slate-500 block">Perfil: {detail?.profile?.profileName || '-'}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-400 block uppercase font-bold">Ganancia Neta</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(sale.netProfit)}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
 
         {/* Modal Venta Rápida */}

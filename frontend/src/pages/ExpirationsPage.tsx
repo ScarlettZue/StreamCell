@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '../components/layout/MainLayout';
-import { AlertTriangle, MessageSquare, RefreshCw, UserX, Clock, CheckCircle2, Loader2, X, Send } from 'lucide-react';
+import { AlertTriangle, MessageSquare, RefreshCw, UserX, Clock, CheckCircle2, Loader2, X, Send, XCircle } from 'lucide-react';
 import { accountService } from '../services/accountService';
 import { whatsappService } from '../services/whatsappService';
 import { subscriptionService } from '../services/subscriptionService';
@@ -120,8 +120,8 @@ export const ExpirationsPage: React.FC = () => {
           </h3>
         </div>
 
-        {/* Tabla de Alertas */}
-        <div className="glass-panel rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm">
+        {/* Tabla de Alertas - Escritorio */}
+        <div className="hidden sm:block glass-panel rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm">
           <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
             <thead className="bg-slate-100 dark:bg-slate-900/80 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
               <tr>
@@ -208,7 +208,7 @@ export const ExpirationsPage: React.FC = () => {
                               setSalePrice(Number(sub.profile?.account?.product?.defaultPrice || 0));
                               setRenewModalOpen(true);
                             }}
-                            className="p-2 bg-brand-purple/20 text-brand-purple dark:text-brand-purple-light hover:bg-brand-purple/30 border border-brand-purple/30 rounded-xl transition-all"
+                            className="p-2 bg-purple-500/20 text-purple-600 dark:text-purple-300 hover:bg-purple-500/30 border border-purple-500/30 rounded-xl transition-all"
                             title="Renovar (+30 días)"
                           >
                             <RefreshCw className="w-4 h-4" />
@@ -218,13 +218,12 @@ export const ExpirationsPage: React.FC = () => {
                             onClick={() => {
                               setSelectedSub(sub);
                               setWithDebt(isExpired);
-                              setDebtAmount(isExpired ? 5000 : 0);
                               setRevokeModalOpen(true);
                             }}
-                            className="p-2 bg-rose-600/20 text-rose-700 dark:text-rose-400 hover:bg-rose-600/30 border border-rose-500/30 rounded-xl transition-all"
-                            title="Retirar Servicio (Con/Sin Deuda)"
+                            className="p-2 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition-all"
+                            title="Finalizar Servicio"
                           >
-                            <UserX className="w-4 h-4" />
+                            <XCircle className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -234,6 +233,98 @@ export const ExpirationsPage: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Tarjetas de Alertas - Móvil */}
+        <div className="sm:hidden space-y-3 pb-24">
+          {isLoading ? (
+            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+              <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+              Cargando alertas de vencimiento...
+            </div>
+          ) : activeSubscriptions.length === 0 ? (
+            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+              No hay suscripciones activas en este momento.
+            </div>
+          ) : (
+            activeSubscriptions.map((sub) => {
+              const daysLeft = getDaysRemaining(sub.serviceEndDate);
+              const isExpired = daysLeft <= 0;
+              const isWarning = daysLeft <= 3 && !isExpired;
+
+              return (
+                <div key={sub.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm text-xs">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm">{sub.client?.name}</h4>
+                      <span className="text-[11px] text-slate-500 font-mono block">{sub.client?.phone}</span>
+                    </div>
+
+                    {isExpired ? (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse">
+                        Vencido ({Math.abs(daysLeft)}d)
+                      </span>
+                    ) : isWarning ? (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                        Vence ({daysLeft}d)
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        Activo ({daysLeft}d)
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-1">
+                    <div className="flex justify-between">
+                      <span className="font-bold text-slate-900 dark:text-white">{sub.profile?.account?.product?.name}</span>
+                      <span className="text-[11px] text-slate-500">{sub.profile?.profileName}</span>
+                    </div>
+                    <div className="font-mono text-[11px] text-slate-500 truncate">{sub.profile?.account?.email}</div>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <span className="text-[11px] text-slate-500">Corte: <strong className="text-slate-700 dark:text-slate-300">{formatDateCO(sub.serviceEndDate)}</strong></span>
+
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => whatsappMutation.mutate(sub)}
+                        className="p-2 bg-emerald-600 text-white rounded-xl"
+                        title="WhatsApp"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedSub(sub);
+                          setSaleCost(Number(sub.profile?.account?.product?.defaultCost || 0));
+                          setSalePrice(Number(sub.profile?.account?.product?.defaultPrice || 0));
+                          setRenewModalOpen(true);
+                        }}
+                        className="p-2 bg-purple-600 text-white rounded-xl"
+                        title="Renovar"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedSub(sub);
+                          setWithDebt(isExpired);
+                          setRevokeModalOpen(true);
+                        }}
+                        className="p-2 bg-rose-500/10 text-rose-600 border border-rose-500/30 rounded-xl"
+                        title="Finalizar"
+                      >
+                        <XCircle className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
 
         {/* Modal WhatsApp Editable */}
