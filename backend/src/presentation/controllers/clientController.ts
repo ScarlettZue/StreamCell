@@ -7,11 +7,15 @@ import { WhatsAppDomainService } from '../../domain/services/whatsappService';
 const createClientSchema = z.object({
   name: z.string().min(2, 'El nombre debe ser válido'),
   phone: z.string().min(7, 'Número de celular inválido'),
+  role: z.enum(['CLIENTE', 'DISTRIBUIDOR']).optional().default('CLIENTE'),
+  distributorId: z.string().nullable().optional(),
 });
 
 const updateClientSchema = z.object({
   name: z.string().min(2, 'El nombre debe ser válido').optional(),
   phone: z.string().optional(),
+  role: z.enum(['CLIENTE', 'DISTRIBUIDOR']).optional(),
+  distributorId: z.string().nullable().optional(),
 });
 
 const payDebtSchema = z.object({
@@ -28,8 +32,9 @@ export class ClientController {
 
   public static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { name, phone } = createClientSchema.parse(req.body);
+      const { name, phone, role, distributorId } = createClientSchema.parse(req.body);
       const normalizedPhone = WhatsAppDomainService.normalizePhone(phone);
+      const finalDistributorId = distributorId && distributorId.trim() !== '' ? distributorId : null;
 
       const clientKey = await ClientController.generateClientKey();
 
@@ -38,12 +43,22 @@ export class ClientController {
           clientKey,
           name,
           phone: normalizedPhone,
+          role,
+          distributorId: finalDistributorId,
+        },
+        include: {
+          distributor: {
+            select: { id: true, name: true, phone: true },
+          },
+          _count: {
+            select: { subscriptions: true, sales: true, subClients: true },
+          },
         },
       });
 
       res.status(201).json({
         success: true,
-        message: 'Cliente registrado exitosamente',
+        message: 'Usuario registrado exitosamente',
         data: client,
       });
     } catch (error) {
@@ -53,7 +68,7 @@ export class ClientController {
 
   public static async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { search } = req.query;
+      const { search, role } = req.query;
 
       const whereClause: any = {};
       if (search && typeof search === 'string') {
@@ -64,12 +79,19 @@ export class ClientController {
         ];
       }
 
+      if (role && typeof role === 'string' && (role === 'CLIENTE' || role === 'DISTRIBUIDOR')) {
+        whereClause.role = role;
+      }
+
       const clients = await prisma.client.findMany({
         where: whereClause,
         orderBy: { createdAt: 'desc' },
         include: {
+          distributor: {
+            select: { id: true, name: true, phone: true },
+          },
           _count: {
-            select: { subscriptions: true, sales: true },
+            select: { subscriptions: true, sales: true, subClients: true },
           },
         },
       });
@@ -90,6 +112,15 @@ export class ClientController {
       const client = await prisma.client.findUnique({
         where: { id },
         include: {
+          distributor: {
+            select: { id: true, name: true, phone: true },
+          },
+          subClients: {
+            include: {
+              subscriptions: true,
+            },
+            orderBy: { name: 'asc' },
+          },
           subscriptions: {
             include: {
               profile: {
@@ -125,7 +156,7 @@ export class ClientController {
       });
 
       if (!client) {
-        throw new AppError('Cliente no encontrado', 404);
+        throw new AppError('Usuario no encontrado', 404);
       }
 
       res.json({
@@ -142,18 +173,36 @@ export class ClientController {
       const { id } = req.params;
       const data = updateClientSchema.parse(req.body);
 
+      if (data.distributorId && data.distributorId === id) {
+        throw new AppError('Un usuario no puede ser asignado como su propio distribuidor', 400);
+      }
+
+      const updateData: any = { ...data };
+
       if (data.phone && data.phone.trim().length > 0) {
-        data.phone = WhatsAppDomainService.normalizePhone(data.phone);
+        updateData.phone = WhatsAppDomainService.normalizePhone(data.phone);
+      }
+
+      if (updateData.distributorId !== undefined) {
+        updateData.distributorId = updateData.distributorId && updateData.distributorId.trim() !== '' ? updateData.distributorId : null;
       }
 
       const client = await prisma.client.update({
         where: { id },
-        data,
+        data: updateData,
+        include: {
+          distributor: {
+            select: { id: true, name: true, phone: true },
+          },
+          _count: {
+            select: { subscriptions: true, sales: true, subClients: true },
+          },
+        },
       });
 
       res.json({
         success: true,
-        message: 'Cliente actualizado exitosamente',
+        message: 'Usuario actualizado exitosamente',
         data: client,
       });
     } catch (error) {

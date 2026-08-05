@@ -1,5 +1,7 @@
 export type Role = 'ADMIN';
 
+export type ClientRole = 'CLIENTE' | 'DISTRIBUIDOR';
+
 export type ProductType = 'MULTI_PROFILE' | 'FULL_ACCOUNT' | 'PERSONAL_INVITATION';
 
 export type AccountStatus = 'ACTIVE' | 'EXPIRED' | 'SUSPENDED';
@@ -89,14 +91,19 @@ export interface IClient {
   clientKey: string;
   name: string;
   phone: string;
+  role?: ClientRole;
+  distributorId?: string | null;
   totalDebt: number;
   createdAt: string;
+  distributor?: { id: string; name: string; phone: string } | null;
+  subClients?: IClient[];
   subscriptions?: IProfileSubscription[];
   debts?: IDebtRecord[];
   sales?: ISale[];
   _count?: {
     subscriptions: number;
     sales: number;
+    subClients?: number;
   };
 }
 
