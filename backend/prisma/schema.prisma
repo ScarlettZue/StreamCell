@@ -24,6 +24,12 @@ enum ClientRole {
   DISTRIBUIDOR
 }
 
+enum ProductCategory {
+  STREAMING
+  SOFTWARE
+  IA
+}
+
 enum ProductType {
   MULTI_PROFILE
   FULL_ACCOUNT
@@ -84,13 +90,15 @@ model Category {
 }
 
 model Product {
-  id            String      @id @default(uuid())
-  name          String
-  categoryId    String
-  type          ProductType @default(MULTI_PROFILE)
-  defaultCost   Decimal     @db.Decimal(10, 2)
-  defaultPrice  Decimal     @db.Decimal(10, 2)
-  profilesCount Int         @default(1)
+  id              String          @id @default(uuid())
+  name            String
+  categoryId      String
+  productCategory ProductCategory @default(STREAMING)
+  type            ProductType     @default(MULTI_PROFILE)
+  defaultCost      Decimal     @db.Decimal(10, 2)
+  defaultPrice     Decimal     @db.Decimal(10, 2)
+  fullAccountPrice Decimal?    @db.Decimal(10, 2)
+  profilesCount    Int         @default(1)
   isActive      Boolean     @default(true)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt

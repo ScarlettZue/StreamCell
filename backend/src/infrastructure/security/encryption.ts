@@ -18,12 +18,17 @@ export class EncryptionService {
   }
 
   public static decrypt(cipherText: string): string {
-    if (!cipherText || !cipherText.includes(':')) return cipherText;
-    const [ivHex, encryptedText] = cipherText.split(':');
-    const iv = Buffer.from(ivHex, 'hex');
-    const decipher = crypto.createDecipheriv(this.ALGORITHM, this.getKey(), iv);
-    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
+    if (!cipherText || typeof cipherText !== 'string' || !cipherText.includes(':')) return cipherText;
+    try {
+      const [ivHex, encryptedText] = cipherText.split(':');
+      if (!ivHex || !encryptedText) return cipherText;
+      const iv = Buffer.from(ivHex, 'hex');
+      const decipher = crypto.createDecipheriv(this.ALGORITHM, this.getKey(), iv);
+      let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+      decrypted += decipher.final('utf8');
+      return decrypted;
+    } catch {
+      return cipherText;
+    }
   }
 }

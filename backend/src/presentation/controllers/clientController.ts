@@ -3,10 +3,11 @@ import { z } from 'zod';
 import { prisma } from '../../infrastructure/database/prisma';
 import { AppError } from '../middlewares/errorHandler';
 import { WhatsAppDomainService } from '../../domain/services/whatsappService';
+import { EncryptionService } from '../../infrastructure/security/encryption';
 
 const createClientSchema = z.object({
   name: z.string().min(2, 'El nombre debe ser válido'),
-  phone: z.string().min(7, 'Número de celular inválido'),
+  phone: z.string().min(3, 'Número de celular o @usuario inválido'),
   role: z.enum(['CLIENTE', 'DISTRIBUIDOR']).optional().default('CLIENTE'),
   distributorId: z.string().nullable().optional(),
 });
@@ -159,9 +160,50 @@ export class ClientController {
         throw new AppError('Usuario no encontrado', 404);
       }
 
+      const formattedSubscriptions = client.subscriptions.map((sub) => ({
+        ...sub,
+        profile: sub.profile
+          ? {
+              ...sub.profile,
+              pin: sub.profile.pin ? EncryptionService.decrypt(sub.profile.pin) : null,
+              account: sub.profile.account
+                ? {
+                    ...sub.profile.account,
+                    password: sub.profile.account.password ? EncryptionService.decrypt(sub.profile.account.password) : null,
+                  }
+                : sub.profile.account,
+            }
+          : sub.profile,
+      }));
+
+      const formattedSales = client.sales.map((sale) => ({
+        ...sale,
+        details: sale.details?.map((detail) => ({
+          ...detail,
+          profile: detail.profile
+            ? {
+                ...detail.profile,
+                pin: detail.profile.pin ? EncryptionService.decrypt(detail.profile.pin) : null,
+                account: detail.profile.account
+                  ? {
+                      ...detail.profile.account,
+                      password: detail.profile.account.password ? EncryptionService.decrypt(detail.profile.account.password) : null,
+                    }
+                  : detail.profile.account,
+              }
+            : detail.profile,
+        })),
+      }));
+
+      const formattedClient = {
+        ...client,
+        subscriptions: formattedSubscriptions,
+        sales: formattedSales,
+      };
+
       res.json({
         success: true,
-        data: client,
+        data: formattedClient,
       });
     } catch (error) {
       next(error);

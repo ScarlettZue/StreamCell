@@ -13,3 +13,4 @@ productRouter.get('/categories', ProductController.getCategories);
 // Productos
 productRouter.post('/products', ProductController.createProduct);
 productRouter.get('/products', ProductController.getProducts);
+productRouter.put('/products/:id', ProductController.updateProduct);
