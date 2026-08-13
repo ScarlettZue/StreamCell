@@ -404,6 +404,7 @@ export const AccountsPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (createAccountMutation.isPending) return;
     if (!productId || !email) return;
 
     createAccountMutation.mutate({
@@ -419,12 +420,14 @@ export const AccountsPage: React.FC = () => {
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (updateAccountMutation.isPending) return;
     if (!editingAccount || !editEmail) return;
     updateAccountMutation.mutate();
   };
 
   const handleProductSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (createProductMutation.isPending || updateProductMutation.isPending) return;
     if (!newProdName.trim()) return;
 
     if (editingProduct) {

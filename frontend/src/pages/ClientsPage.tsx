@@ -107,6 +107,7 @@ export const ClientsPage: React.FC = () => {
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (createMutation.isPending) return;
     setModalError(null);
     if (!name || !phone) return;
     createMutation.mutate();
@@ -114,6 +115,7 @@ export const ClientsPage: React.FC = () => {
 
   const handleUpdateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (updateMutation.isPending) return;
     setModalError(null);
     if (!selectedClient || !name) return;
     updateMutation.mutate();

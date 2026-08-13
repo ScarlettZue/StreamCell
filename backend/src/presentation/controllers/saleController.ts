@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../../infrastructure/database/prisma';
 import { AppError } from '../middlewares/errorHandler';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { EncryptionService } from '../../infrastructure/security/encryption';
 
 const createSaleSchema = z.object({
   clientId: z.string().uuid('ID de cliente no válido'),
@@ -32,8 +33,7 @@ export class SaleController {
       const client = await prisma.client.findUnique({ where: { id: clientId } });
       if (!client) throw new AppError('El cliente no existe', 404);
 
-      const now = new Date();
-      const sStartDate = serviceStartDate ? new Date(serviceStartDate) : now;
+      const sStartDate = serviceStartDate ? new Date(serviceStartDate) : new Date();
       const sEndDate = serviceEndDate ? new Date(serviceEndDate) : new Date(sStartDate.getTime() + 30 * 24 * 60 * 60 * 1000);
 
       const subtotalProfit = unitPrice - unitCost;
@@ -83,10 +83,48 @@ export class SaleController {
         return sale;
       });
 
+      const fullSale = await prisma.sale.findUnique({
+        where: { id: saleResult.id },
+        include: {
+          client: true,
+          details: {
+            include: {
+              profile: {
+                include: {
+                  account: {
+                    include: {
+                      product: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const decryptedDetails = fullSale?.details.map((d) => ({
+        ...d,
+        profile: d.profile
+          ? {
+              ...d.profile,
+              pin: d.profile.pin ? EncryptionService.decrypt(d.profile.pin) : null,
+              account: d.profile.account
+                ? {
+                    ...d.profile.account,
+                    password: d.profile.account.password ? EncryptionService.decrypt(d.profile.account.password) : null,
+                  }
+                : null,
+            }
+          : null,
+      }));
+
+      const finalResponseData = fullSale ? { ...fullSale, details: decryptedDetails } : saleResult;
+
       res.status(201).json({
         success: true,
         message: 'Venta registrada con éxito',
-        data: saleResult,
+        data: finalResponseData,
       });
     } catch (error) {
       next(error);

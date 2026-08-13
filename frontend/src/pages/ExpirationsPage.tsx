@@ -125,6 +125,8 @@ export const ExpirationsPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['availableProfiles'] });
+      queryClient.invalidateQueries({ queryKey: ['expirations'] });
       setRevokeModalOpen(false);
       const acc = selectedSub?.profile?.account || null;
       if (acc) {
@@ -150,6 +152,8 @@ export const ExpirationsPage: React.FC = () => {
     onSuccess: (updatedSub) => {
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['availableProfiles'] });
+      queryClient.invalidateQueries({ queryKey: ['expirations'] });
 
       const phone = selectedSub?.client?.phone || '';
       const newEndDate = updatedSub?.serviceEndDate || calculateNewEndDate(selectedSub!.serviceEndDate, durationDays);
