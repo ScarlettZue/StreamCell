@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '../components/layout/MainLayout';
-import { AlertTriangle, MessageSquare, RefreshCw, UserX, Clock, CheckCircle2, Loader2, X, Send, XCircle, Edit2 } from 'lucide-react';
+import { AlertTriangle, MessageSquare, RefreshCw, UserX, Clock, CheckCircle2, Loader2, X, Send, XCircle, Edit2, Copy, Check } from 'lucide-react';
 import { accountService } from '../services/accountService';
 import { whatsappService } from '../services/whatsappService';
 import { subscriptionService } from '../services/subscriptionService';
-import { formatDateCO, formatCurrency, getDaysRemaining } from '../utils/formatters';
+import { formatDateCO, formatCurrency, getDaysRemaining, formatRenewalWhatsAppMessage, buildWhatsAppLink } from '../utils/formatters';
 import { IProfileSubscription, IWhatsAppReminder, IAccount } from '../types';
 import { AccountEditModal } from '../components/AccountEditModal';
 import { AccountNotificationModal } from '../components/AccountNotificationModal';
@@ -34,6 +34,12 @@ export const ExpirationsPage: React.FC = () => {
   const [renewModalOpen, setRenewModalOpen] = useState(false);
   const [saleCost, setSaleCost] = useState<number>(0);
   const [salePrice, setSalePrice] = useState<number>(0);
+
+  // Renewal Pos-Success WhatsApp Modal State
+  const [renewalSuccessModalOpen, setRenewalSuccessModalOpen] = useState(false);
+  const [renewalWspPhone, setRenewalWspPhone] = useState('');
+  const [editedRenewalMessage, setEditedRenewalMessage] = useState('');
+  const [copiedSuccess, setCopiedSuccess] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -100,7 +106,6 @@ export const ExpirationsPage: React.FC = () => {
     },
   });
 
-
   const renewMutation = useMutation({
     mutationFn: () =>
       subscriptionService.renewSubscription({
@@ -108,11 +113,27 @@ export const ExpirationsPage: React.FC = () => {
         saleCost,
         salePrice,
       }),
-    onSuccess: () => {
+    onSuccess: (updatedSub) => {
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       queryClient.invalidateQueries({ queryKey: ['sales'] });
+
+      const phone = selectedSub?.client?.phone || '';
+      const newEndDate = updatedSub?.serviceEndDate || selectedSub?.serviceEndDate || new Date();
+
+      const formattedMessage = formatRenewalWhatsAppMessage({
+        productName: selectedSub?.profile?.account?.product?.name || 'Servicio',
+        accountEmail: selectedSub?.profile?.account?.email,
+        accountPassword: selectedSub?.profile?.account?.password,
+        profileName: selectedSub?.profile?.profileName,
+        pin: selectedSub?.profile?.pin,
+        durationDays: 30,
+        dueDate: newEndDate,
+      });
+
+      setRenewalWspPhone(phone);
+      setEditedRenewalMessage(formattedMessage);
       setRenewModalOpen(false);
-      setSelectedSub(null);
+      setRenewalSuccessModalOpen(true);
     },
   });
 
@@ -123,6 +144,21 @@ export const ExpirationsPage: React.FC = () => {
     window.open(url, '_blank');
     setWspModalOpen(false);
   };
+
+  const handleSendRenewalWhatsApp = () => {
+    if (!renewalWspPhone) return;
+    const link = buildWhatsAppLink(renewalWspPhone, editedRenewalMessage);
+    window.open(link, '_blank');
+    setRenewalSuccessModalOpen(false);
+    setSelectedSub(null);
+  };
+
+  const handleCopyRenewalMessage = () => {
+    navigator.clipboard.writeText(editedRenewalMessage);
+    setCopiedSuccess(true);
+    setTimeout(() => setCopiedSuccess(false), 2000);
+  };
+
 
   return (
     <MainLayout title="Alertas de Vencimiento de Corte" subtitle="Gestión de notificaciones de WhatsApp con saludo horario y retiros con/sin deuda">
@@ -651,6 +687,79 @@ export const ExpirationsPage: React.FC = () => {
           }}
           account={activeAccountForEdit}
         />
+
+        {/* Modal Éxito Pos-Renovación (WhatsApp) */}
+        {renewalSuccessModalOpen &&
+          createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+              <div className="glass-panel w-full max-w-lg p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-glass space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                    <span>Servicio Renovado con Éxito</span>
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setRenewalSuccessModalOpen(false);
+                      setSelectedSub(null);
+                    }}
+                    className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center space-x-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>La fecha de corte fue extendida. Puedes enviar el mensaje de renovación al cliente por WhatsApp.</span>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">
+                      Mensaje de Confirmación (Editable)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleCopyRenewalMessage}
+                      className="text-xs font-semibold text-brand-purple hover:underline flex items-center space-x-1"
+                    >
+                      {copiedSuccess ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedSuccess ? '¡Copiado!' : 'Copiar Texto'}</span>
+                    </button>
+                  </div>
+                  <textarea
+                    rows={8}
+                    value={editedRenewalMessage}
+                    onChange={(e) => setEditedRenewalMessage(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                  />
+                </div>
+
+                <div className="pt-3 flex justify-end space-x-3 border-t border-slate-200 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRenewalSuccessModalOpen(false);
+                      setSelectedSub(null);
+                    }}
+                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                  >
+                    Cerrar sin enviar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSendRenewalWhatsApp}
+                    className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-500 shadow-glow flex items-center space-x-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>Enviar Notificación por WhatsApp</span>
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
       </div>
     </MainLayout>
   );

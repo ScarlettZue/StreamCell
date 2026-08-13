@@ -161,3 +161,47 @@ export const buildAccountChangeWhatsAppMessage = (params: IAccountChangeMessageP
   );
 };
 
+export interface IRenewalMessageParams {
+  productName: string;
+  accountEmail?: string | null;
+  accountPassword?: string | null;
+  profileName?: string | null;
+  pin?: string | null;
+  durationDays?: number;
+  dueDate: string | Date;
+}
+
+/**
+ * Construye el mensaje oficial de confirmación de renovación de servicio por WhatsApp
+ */
+export const formatRenewalWhatsAppMessage = (params: IRenewalMessageParams): string => {
+  const formattedDate = formatDateLongCO(params.dueDate);
+  const durationText = params.durationDays ? ` X${params.durationDays} DIAS` : ' X30 DIAS';
+  const serviceHeader = `${params.productName.toUpperCase()}${durationText}`;
+
+  const lines: string[] = [
+    'Te confirmo que se ha renovado tu servicio,',
+    '',
+    serviceHeader,
+  ];
+
+  if (params.accountEmail) {
+    lines.push(`Correo: ${params.accountEmail}`);
+  }
+  if (params.accountPassword) {
+    lines.push(`Contraseña: ${params.accountPassword}`);
+  }
+  if (params.profileName) {
+    lines.push(`Perfil: ${params.profileName}`);
+  }
+  if (params.pin && params.pin.trim() !== '') {
+    lines.push(`Pin: ${params.pin}`);
+  }
+
+  lines.push('No compartir o cambiar contraseñas, evitar tener mas de un dispositivo conectado a su pantalla para evitar suspensión de la cuenta.');
+  lines.push(`Válido hasta ${formattedDate}`);
+
+  return lines.join('\n');
+};
+
+

@@ -31,3 +31,9 @@ Thumbs.db
 # Prisma SQLite/Temp DBs (if any)
 backend/prisma/*.db
 backend/prisma/*.db-journal
+
+# Vite cache
+.vite/
+*.vite
+frontend/.vite/
+
