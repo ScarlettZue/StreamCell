@@ -6,9 +6,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.
 ## [Unreleased]
 
 ### Añadido
-- **Revisión e Inspección del Archivo Excel Base (`Plataformas Streaming, archivo base.xlsm`):**
-  - Mapeo completo de las pestañas `Registro`, `Ventas`, `Gastos`, `Netflix`, `Spotify`, `Listado Precios` y `Productos` hacia la arquitectura y modelo de datos relacional de Streamcell.
-- **Normalización de Zona Horaria a Colombia (`America/Bogota` - UTC-5):**
-  - Configuración estricta de la capa de dominio backend para calcular horas de saludo en WhatsApp ("Buenos días", "Buenas tardes", "Buenas noches"), conteo de días para alertas de corte y fechas de transacciones en hora colombiana (COT).
-  - Documentación de ADR-007 (Zona Horaria Colombia) y ADR-008 (Mapeo de Dominio desde el Excel Base) en `docs/decisiones.md`.
-- Actualización de toda la suite de documentación en `docs/`, `PROJECT.md`, `TASKS.md` y `CHANGELOG.md`.
+- **Creación del Manual de Marca, Voz, Tono y Colores ([docs/10-manual-marca.md](file:///c:/Users/Tina/Documents/StreamCell/docs/10-manual-marca.md)):**
+  - Definición de la personalidad verbal de Streamcell: *hogareña, amigable, servicial y formal*.
+  - Matriz de tono para WhatsApp, interfaz web, mensajes de alerta y confirmación.
+  - Paleta de colores primarios y secundarios para **Modo Oscuro** y **Modo Claro** basada en el logo oficial (Azul `#3B82F6` y Morado `#8B5CF6`).
+  - Escala de jerarquía tipográfica con la fuente **Inter** de Google Fonts.
+- Corrección de la etiqueta script en `frontend/index.html` resolviendo el inicio de la aplicación en `http://localhost:5173`.

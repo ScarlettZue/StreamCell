@@ -1,0 +1,47 @@
+schema: spec-driven
+
+# Contexto completo del proyecto Streamcell para IA y OpenSpec
+context: |
+  # STREAMCELL - PLATAFORMA DE GESTIÓN Y VENTA DE CUENTAS DE STREAMING
+
+  ## 1. DOMINIO Y PROPÓSITO DEL SISTEMA
+  Streamcell es un sistema integral de gestión comercial para la venta, control de inventario, perfiles, suscripciones, deudas de clientes y alertas de vencimientos de cuentas de streaming (Netflix, Spotify, Prime Video, Disney+, Max, etc.).
+
+  ## 2. ARQUITECTURA Y STACK TECNOLÓGICO
+  - **Backend:** Node.js, Express.js, TypeScript, Prisma ORM.
+  - **Base de Datos:** PostgreSQL en Supabase Cloud Pooler (Puerto 6543, pgbouncer=true, Zona Horaria America/Bogota).
+  - **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, TanStack React Query v5, Lucide React Icons.
+  - **Manejo de Modales:** Todos los modales interactivos deben usar React Portals (`createPortal(..., document.body)`) con `z-[9999]` para prevenir trampas de contexto CSS.
+
+  ## 3. MANUAL DE MARCA Y DISEÑO VISUAL
+  - **Colores Principales:** Azul (`#3B82F6` / `blue-600`) y Morado (`#8B5CF6` / `purple-600`).
+  - **Botones y Acciones Principales:** Gradiente `bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md font-bold`.
+  - **Modo Oscuro:** Fondo principal `#090D16`, paneles `slate-900`, bordes `slate-800`.
+  - **Modo Claro:** Fondo principal `#F8FAFC`, paneles `white`, bordes `slate-200`.
+  - **Tipografía:** Google Font Inter.
+  - **Logo:** Logo oficial transparente sin recuadros ni bordes (`/logo.png`).
+  - **Regla Estricta de Emojis:** PROHIBIDO usar emojis en la interfaz. Utilizar exclusivamente íconos de Lucide React.
+  - **Tono de Voz:** Amigable, servicial, formal y acogedor ("hogareño").
+
+  ## 4. FORMATEO DE DATOS Y CONVENCIONES
+  - **Moneda:** Formato colombiano `$ COP` (ej: `$ 15.000`).
+  - **Fechas:** Representación latina `DD/MM/AAAA` ajustada a zona horaria de Colombia (`America/Bogota`).
+  - **IDs de Clientes:** Consecutivo `CLI-XXXX` (ej: `CLI-0001`).
+  - **Celulares:** Guardados en la BD como números limpios de 10 dígitos (ej: `3126622931`). Para WhatsApp (`wa.me`) agregar dinámicamente el prefijo `57`.
+
+  ## 5. REGLAS DE CONTROL DE VERSIONES (GIT)
+  - Hacer commits locales frecuentes en la rama `develop`.
+  - PROHIBIDO hacer `git push` a `origin` a menos que el usuario lo autorice explícitamente en el chat.
+
+# Reglas por Artefacto de OpenSpec
+rules:
+  proposal:
+    - Incluir siempre resumen técnico de cambios en Backend, Frontend y Base de Datos.
+    - Asegurar que todo nuevo componente respete la paleta de colores y el manual de marca en docs/10-manual-marca.md.
+    - Especificar el plan de verificación con build de TypeScript y tests.
+  specs:
+    - Definir contratos Zod para el Backend y tipos TypeScript estrictos en el Frontend.
+    - Incluir soporte nativo para Modo Claro y Modo Oscuro en cada componente visual.
+  tasks:
+    - Dividir las tareas en pasos pequeños y verificables.
+    - Incluir tareas para compilación `npm run build` en frontend y backend.
