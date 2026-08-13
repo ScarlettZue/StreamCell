@@ -1,13 +1,14 @@
 // Prisma Schema - Streamcell Database Model
-// Motor: PostgreSQL
+// Motor: PostgreSQL (Supabase Cloud)
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ------------------------------------
@@ -16,6 +17,17 @@ datasource db {
 
 enum Role {
   ADMIN
+}
+
+enum ClientRole {
+  CLIENTE
+  DISTRIBUIDOR
+}
+
+enum ProductCategory {
+  STREAMING
+  SOFTWARE
+  IA
 }
 
 enum ProductType {
@@ -78,13 +90,15 @@ model Category {
 }
 
 model Product {
-  id            String      @id @default(uuid())
-  name          String
-  categoryId    String
-  type          ProductType @default(MULTI_PROFILE)
-  defaultCost   Decimal     @db.Decimal(10, 2)
-  defaultPrice  Decimal     @db.Decimal(10, 2)
-  profilesCount Int         @default(1)
+  id              String          @id @default(uuid())
+  name            String
+  categoryId      String
+  productCategory ProductCategory @default(STREAMING)
+  type            ProductType     @default(MULTI_PROFILE)
+  defaultCost      Decimal     @db.Decimal(10, 2)
+  defaultPrice     Decimal     @db.Decimal(10, 2)
+  fullAccountPrice Decimal?    @db.Decimal(10, 2)
+  profilesCount    Int         @default(1)
   isActive      Boolean     @default(true)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -134,13 +148,18 @@ model AccountProfile {
 }
 
 model Client {
-  id        String   @id @default(uuid())
-  clientKey String   @unique
-  name      String
-  phone     String
-  totalDebt Decimal  @default(0.00) @db.Decimal(10, 2)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String     @id @default(uuid())
+  clientKey     String     @unique
+  name          String
+  phone         String
+  role          ClientRole @default(CLIENTE)
+  totalDebt     Decimal    @default(0.00) @db.Decimal(10, 2)
+  distributorId String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  distributor Client?  @relation("DistributorClients", fields: [distributorId], references: [id], onDelete: SetNull)
+  subClients  Client[] @relation("DistributorClients")
 
   subscriptions ProfileSubscription[]
   debts         DebtRecord[]

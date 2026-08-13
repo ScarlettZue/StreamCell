@@ -14,17 +14,12 @@ export class WhatsAppController {
   public static generateReminder(req: Request, res: Response, next: NextFunction): void {
     try {
       const { clientName, phone, productName, dueDate } = whatsappSchema.parse(req.body);
-      const dateObj = typeof dueDate === 'string' ? new Date(dueDate) : dueDate;
-
-      if (isNaN(dateObj.getTime())) {
-        throw new AppError('La fecha de vencimiento no es válida', 400);
-      }
 
       const result = WhatsAppDomainService.generateReminder({
         clientName,
         phone,
         productName,
-        dueDate: dateObj,
+        dueDate,
       });
 
       res.json({

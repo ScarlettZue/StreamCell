@@ -1,0 +1,18 @@
+{
+  "short_name": "StreamCell",
+  "name": "StreamCell - Gestión de Cuentas de Streaming",
+  "description": "Plataforma de gestión comercial y venta de cuentas de streaming, clientes y suscripciones.",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#090D16",
+  "theme_color": "#090D16",
+  "display": "standalone",
+  "orientation": "portrait"
+}
