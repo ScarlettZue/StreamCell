@@ -200,7 +200,8 @@ export class SaleController {
   public static async updateSale(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
-      const { unitCost, unitPrice, createdAt } = req.body;
+      const { unitCost, unitPrice, createdAt, accountProfileId, profileId, serviceStartDate, serviceEndDate } = req.body;
+      const targetProfileId = accountProfileId || profileId;
 
       const sale = await prisma.sale.findUnique({
         where: { id },
@@ -219,17 +220,61 @@ export class SaleController {
           const newPrice = unitPrice !== undefined ? Number(unitPrice) : Number(detail.unitPrice);
           const newSubtotalProfit = newPrice - newCost;
 
+          const oldProfileId = detail.accountProfileId;
+          const isProfileChanged = Boolean(targetProfileId && targetProfileId !== oldProfileId);
+          const nextProfileId = isProfileChanged ? targetProfileId : oldProfileId;
+
           await tx.saleDetail.update({
             where: { id: detail.id },
             data: {
               unitCost: newCost,
               unitPrice: newPrice,
               subtotalProfit: newSubtotalProfit,
+              ...(isProfileChanged ? { accountProfileId: nextProfileId } : {}),
             },
           });
 
           newTotalCost = newCost;
           newTotalAmount = newPrice;
+
+          // Buscar la suscripción asociada al cliente y perfil
+          const sub = await tx.profileSubscription.findFirst({
+            where: {
+              clientId: sale.clientId,
+              accountProfileId: oldProfileId,
+              status: 'ACTIVE',
+            },
+          });
+
+          if (sub) {
+            const subUpdateData: any = {};
+            if (isProfileChanged && nextProfileId) {
+              subUpdateData.accountProfileId = nextProfileId;
+              // Marcar perfil anterior como disponible
+              await tx.accountProfile.update({
+                where: { id: oldProfileId },
+                data: { status: 'AVAILABLE' },
+              });
+              // Marcar nuevo perfil como vendido
+              await tx.accountProfile.update({
+                where: { id: nextProfileId },
+                data: { status: 'SOLD' },
+              });
+            }
+            if (serviceStartDate) {
+              subUpdateData.serviceStartDate = new Date(serviceStartDate);
+            }
+            if (serviceEndDate) {
+              subUpdateData.serviceEndDate = new Date(serviceEndDate);
+            }
+
+            if (Object.keys(subUpdateData).length > 0) {
+              await tx.profileSubscription.update({
+                where: { id: sub.id },
+                data: subUpdateData,
+              });
+            }
+          }
         }
 
         const newNetProfit = newTotalAmount - newTotalCost;

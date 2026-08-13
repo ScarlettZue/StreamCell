@@ -32,6 +32,9 @@ export const ExpirationsPage: React.FC = () => {
 
   // Renew Modal State
   const [renewModalOpen, setRenewModalOpen] = useState(false);
+  const [durationDays, setDurationDays] = useState<number>(30);
+  const [baseSaleCost, setBaseSaleCost] = useState<number>(0);
+  const [baseSalePrice, setBaseSalePrice] = useState<number>(0);
   const [saleCost, setSaleCost] = useState<number>(0);
   const [salePrice, setSalePrice] = useState<number>(0);
 
@@ -42,6 +45,33 @@ export const ExpirationsPage: React.FC = () => {
   const [copiedSuccess, setCopiedSuccess] = useState(false);
 
   const queryClient = useQueryClient();
+
+  const handleOpenRenewModal = (sub: IProfileSubscription) => {
+    setSelectedSub(sub);
+    const totalProfiles = sub.profile?.account?.product?.profilesCount || 1;
+    const unitCost = Math.round(Number(sub.profile?.account?.product?.defaultCost || 0) / totalProfiles);
+    const unitPrice = Number(sub.profile?.account?.product?.defaultPrice || 0);
+
+    setBaseSaleCost(unitCost);
+    setBaseSalePrice(unitPrice);
+    setDurationDays(30);
+    setSaleCost(unitCost);
+    setSalePrice(unitPrice);
+    setRenewModalOpen(true);
+  };
+
+  const handleSelectDuration = (days: number) => {
+    setDurationDays(days);
+    const factor = days / 30;
+    setSaleCost(baseSaleCost * factor);
+    setSalePrice(baseSalePrice * factor);
+  };
+
+  const calculateNewEndDate = (currentEndDate: string | Date, days: number): Date => {
+    const date = new Date(currentEndDate);
+    date.setDate(date.getDate() + days);
+    return date;
+  };
 
   const { data: accounts, isLoading } = useQuery({
     queryKey: ['accounts'],
@@ -107,18 +137,22 @@ export const ExpirationsPage: React.FC = () => {
   });
 
   const renewMutation = useMutation({
-    mutationFn: () =>
-      subscriptionService.renewSubscription({
+    mutationFn: () => {
+      const calculatedEndDate = calculateNewEndDate(selectedSub!.serviceEndDate, durationDays);
+      return subscriptionService.renewSubscription({
         subscriptionId: selectedSub!.id,
         saleCost,
         salePrice,
-      }),
+        durationDays,
+        serviceEndDate: calculatedEndDate.toISOString(),
+      });
+    },
     onSuccess: (updatedSub) => {
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       queryClient.invalidateQueries({ queryKey: ['sales'] });
 
       const phone = selectedSub?.client?.phone || '';
-      const newEndDate = updatedSub?.serviceEndDate || selectedSub?.serviceEndDate || new Date();
+      const newEndDate = updatedSub?.serviceEndDate || calculateNewEndDate(selectedSub!.serviceEndDate, durationDays);
 
       const formattedMessage = formatRenewalWhatsAppMessage({
         productName: selectedSub?.profile?.account?.product?.name || 'Servicio',
@@ -126,7 +160,7 @@ export const ExpirationsPage: React.FC = () => {
         accountPassword: selectedSub?.profile?.account?.password,
         profileName: selectedSub?.profile?.profileName,
         pin: selectedSub?.profile?.pin,
-        durationDays: 30,
+        durationDays,
         dueDate: newEndDate,
       });
 
@@ -136,6 +170,7 @@ export const ExpirationsPage: React.FC = () => {
       setRenewalSuccessModalOpen(true);
     },
   });
+
 
   const handleSendWhatsApp = () => {
     if (!reminderData) return;
@@ -258,16 +293,9 @@ export const ExpirationsPage: React.FC = () => {
                           </button>
 
                           <button
-                            onClick={() => {
-                              setSelectedSub(sub);
-                              const totalProfiles = sub.profile?.account?.product?.profilesCount || 1;
-                              const unitCost = Math.round(Number(sub.profile?.account?.product?.defaultCost || 0) / totalProfiles);
-                              setSaleCost(unitCost);
-                              setSalePrice(Number(sub.profile?.account?.product?.defaultPrice || 0));
-                              setRenewModalOpen(true);
-                            }}
+                            onClick={() => handleOpenRenewModal(sub)}
                             className="p-2 bg-purple-500/20 text-purple-600 dark:text-purple-300 hover:bg-purple-500/30 border border-purple-500/30 rounded-xl transition-all"
-                            title="Renovar (+30 días)"
+                            title="Renovar servicio"
                           >
                             <RefreshCw className="w-4 h-4" />
                           </button>
@@ -358,16 +386,9 @@ export const ExpirationsPage: React.FC = () => {
                       </button>
 
                       <button
-                        onClick={() => {
-                          setSelectedSub(sub);
-                          const totalProfiles = sub.profile?.account?.product?.profilesCount || 1;
-                          const unitCost = Math.round(Number(sub.profile?.account?.product?.defaultCost || 0) / totalProfiles);
-                          setSaleCost(unitCost);
-                          setSalePrice(Number(sub.profile?.account?.product?.defaultPrice || 0));
-                          setRenewModalOpen(true);
-                        }}
+                        onClick={() => handleOpenRenewModal(sub)}
                         className="p-2 bg-purple-600 text-white rounded-xl"
-                        title="Renovar"
+                        title="Renovar servicio"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
                       </button>
@@ -532,7 +553,7 @@ export const ExpirationsPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
                     <RefreshCw className="w-5 h-5 text-brand-purple" />
-                    <span>Renovar Servicio (+30 Días)</span>
+                    <span>Renovar Servicio (+{durationDays} Días)</span>
                   </h3>
                   <button onClick={() => setRenewModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
                     <X className="w-5 h-5" />
@@ -540,6 +561,29 @@ export const ExpirationsPage: React.FC = () => {
                 </div>
 
                 <form onSubmit={(e) => { e.preventDefault(); renewMutation.mutate(); }} className="space-y-4">
+                  {/* Selector de Período de Renovación */}
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">
+                      Período de Renovación
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[30, 60, 90].map((days) => (
+                        <button
+                          key={days}
+                          type="button"
+                          onClick={() => handleSelectDuration(days)}
+                          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                            durationDays === days
+                              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white border-transparent shadow-md'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
+                          }`}
+                        >
+                          +{days} Días
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Tarjeta Informativa de Confirmación de Renovación */}
                   <div className="p-3.5 bg-slate-100 dark:bg-slate-900/70 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs">
                     <div className="flex justify-between items-center">
@@ -561,6 +605,12 @@ export const ExpirationsPage: React.FC = () => {
                     <div className="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800/80">
                       <span className="text-slate-500 dark:text-slate-400 font-medium">Fecha de Corte Actual:</span>
                       <span className="font-mono font-bold text-amber-600 dark:text-amber-400">{formatDateCO(selectedSub.serviceEndDate)}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800/80">
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">Nueva Fecha de Corte:</span>
+                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        {formatDateCO(calculateNewEndDate(selectedSub.serviceEndDate, durationDays))}
+                      </span>
                     </div>
                   </div>
 

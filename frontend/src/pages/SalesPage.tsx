@@ -46,6 +46,9 @@ export const SalesPage: React.FC = () => {
   // Formulario de Edición
   const [editCost, setEditCost] = useState<number>(0);
   const [editPrice, setEditPrice] = useState<number>(0);
+  const [editStartDate, setEditStartDate] = useState<string>('');
+  const [editEndDate, setEditEndDate] = useState<string>('');
+  const [editProfileId, setEditProfileId] = useState<string>('');
 
   // Búsqueda e Historial
   const [searchTerm, setSearchTerm] = useState('');
@@ -100,12 +103,13 @@ export const SalesPage: React.FC = () => {
     const detail = sale.details?.[0];
     const prodMatch = detail?.profile?.account?.product?.name?.toLowerCase().includes(term);
     const profMatch = detail?.profile?.profileName?.toLowerCase().includes(term);
-    return codeMatch || clientMatch || prodMatch || profMatch;
-  }) || [];
+    const emailMatch = detail?.profile?.account?.email?.toLowerCase().includes(term);
+    return codeMatch || clientMatch || prodMatch || profMatch || emailMatch;
+  });
 
   // Paginación
-  const totalPages = Math.ceil(filteredSales.length / itemsPerPage) || 1;
-  const currentSales = filteredSales.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil((filteredSales?.length || 0) / itemsPerPage);
+  const currentSales = filteredSales?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) || [];
 
   // Métrica Ventas de Hoy
   const todayStr = getTodayStr();
@@ -170,9 +174,14 @@ export const SalesPage: React.FC = () => {
       saleService.updateSale(selectedSale!.id, {
         unitCost: editCost,
         unitPrice: editPrice,
+        accountProfileId: editProfileId,
+        serviceStartDate: editStartDate,
+        serviceEndDate: editEndDate,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['availableProfiles'] });
       queryClient.invalidateQueries({ queryKey: ['cashFlowStats'] });
       setEditModalOpen(false);
       setSelectedSale(null);
@@ -216,6 +225,13 @@ export const SalesPage: React.FC = () => {
     const detail = sale.details?.[0];
     setEditCost(detail ? Number(detail.unitCost) : Number(sale.totalCost));
     setEditPrice(detail ? Number(detail.unitPrice) : Number(sale.totalAmount));
+
+    const currentProfId = detail?.accountProfileId || '';
+    setEditProfileId(currentProfId);
+
+    const created = sale.createdAt ? new Date(sale.createdAt).toISOString().split('T')[0] : getTodayStr();
+    setEditStartDate(created);
+    setEditEndDate(get30DaysLaterStr(created));
     setEditModalOpen(true);
   };
 
@@ -438,7 +454,7 @@ export const SalesPage: React.FC = () => {
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-2">
             <span className="text-xs text-slate-500">
-              Página {currentPage} de {totalPages} ({filteredSales.length} registros)
+              Página {currentPage} de {totalPages} ({filteredSales?.length || 0} registros)
             </span>
 
             <div className="flex items-center space-x-2">
@@ -686,9 +702,56 @@ export const SalesPage: React.FC = () => {
                 <div className="space-y-4">
                   <div className="p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl text-xs space-y-1">
                     <p className="text-slate-600 dark:text-slate-400">Cliente: <strong className="text-slate-900 dark:text-white">{selectedSale.client?.name}</strong></p>
-                    <p className="text-slate-600 dark:text-slate-400">Producto: <strong className="text-purple-600 dark:text-purple-400">{selectedSale.details?.[0]?.profile?.account?.product?.name} ({selectedSale.details?.[0]?.profile?.profileName})</strong></p>
+                    <p className="text-slate-600 dark:text-slate-400">Producto Actual: <strong className="text-purple-600 dark:text-purple-400">{selectedSale.details?.[0]?.profile?.account?.product?.name} ({selectedSale.details?.[0]?.profile?.profileName})</strong></p>
                   </div>
 
+                  {/* Selector de Reasignación de Perfil / Cuenta */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                      Reasignar Cuenta / Perfil
+                    </label>
+                    <select
+                      value={editProfileId}
+                      onChange={(e) => setEditProfileId(e.target.value)}
+                      className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white"
+                    >
+                      <option value={selectedSale.details?.[0]?.accountProfileId || ''}>
+                        [Actual] {selectedSale.details?.[0]?.profile?.account?.product?.name} ({selectedSale.details?.[0]?.profile?.profileName}) - {selectedSale.details?.[0]?.profile?.account?.email}
+                      </option>
+                      {availableProfiles
+                        ?.filter((p) => p.id !== selectedSale.details?.[0]?.accountProfileId)
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.account?.product?.name} ({p.profileName}) - {p.account?.email}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  {/* Fechas de Servicio */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Fecha Inicio Servicio</label>
+                      <input
+                        type="date"
+                        value={editStartDate}
+                        onChange={(e) => setEditStartDate(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Fecha Corte Servicio</label>
+                      <input
+                        type="date"
+                        value={editEndDate}
+                        onChange={(e) => setEditEndDate(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Costos y Precios */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Costo Real ($)</label>

@@ -7,6 +7,7 @@ import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 const renewSchema = z.object({
   serviceStartDate: z.string().or(z.date()).optional(),
   serviceEndDate: z.string().or(z.date()).optional(),
+  durationDays: z.number().optional(),
   saleCost: z.number().nonnegative('El costo debe ser mayor o igual a 0'),
   salePrice: z.number().positive('El precio debe ser mayor a 0'),
 });
@@ -24,7 +25,7 @@ export class SubscriptionController {
       if (!userId) throw new AppError('Usuario no autenticado', 401);
 
       const { id } = req.params;
-      const { serviceStartDate, serviceEndDate, saleCost, salePrice } = renewSchema.parse(req.body);
+      const { serviceStartDate, serviceEndDate, durationDays, saleCost, salePrice } = renewSchema.parse(req.body);
 
       const subscription = await prisma.profileSubscription.findUnique({
         where: { id },
@@ -36,11 +37,20 @@ export class SubscriptionController {
 
       if (!subscription) throw new AppError('Suscripción no encontrada', 404);
 
-      const now = new Date();
-      const sStartDate = serviceStartDate ? new Date(serviceStartDate) : now;
-      const sEndDate = serviceEndDate ? new Date(serviceEndDate) : new Date(sStartDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const daysToAdd = durationDays || 30;
+      const sStartDate = serviceStartDate ? new Date(serviceStartDate) : subscription.serviceStartDate;
+
+      let sEndDate: Date;
+      if (serviceEndDate) {
+        sEndDate = new Date(serviceEndDate);
+      } else {
+        const baseDate = new Date(subscription.serviceEndDate);
+        baseDate.setDate(baseDate.getDate() + daysToAdd);
+        sEndDate = baseDate;
+      }
 
       const subtotalProfit = salePrice - saleCost;
+
 
       const result = await prisma.$transaction(async (tx) => {
         // Actualizar suscripción

@@ -6,12 +6,14 @@ export const subscriptionService = {
     subscriptionId: string;
     saleCost: number;
     salePrice: number;
+    durationDays?: number;
     serviceStartDate?: string;
     serviceEndDate?: string;
   }): Promise<IProfileSubscription> {
     const res = await api.post<ApiResponse<IProfileSubscription>>(`/subscriptions/${data.subscriptionId}/renew`, {
       saleCost: data.saleCost,
       salePrice: data.salePrice,
+      durationDays: data.durationDays,
       serviceStartDate: data.serviceStartDate,
       serviceEndDate: data.serviceEndDate,
     });

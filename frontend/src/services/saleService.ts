@@ -48,7 +48,17 @@ export const saleService = {
     return res.data.data;
   },
 
-  async updateSale(id: string, data: { unitCost?: number; unitPrice?: number; createdAt?: string }): Promise<void> {
+  async updateSale(
+    id: string,
+    data: {
+      unitCost?: number;
+      unitPrice?: number;
+      createdAt?: string;
+      accountProfileId?: string;
+      serviceStartDate?: string;
+      serviceEndDate?: string;
+    }
+  ): Promise<void> {
     await api.put(`/sales/${id}`, data);
   },
 
