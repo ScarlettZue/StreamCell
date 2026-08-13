@@ -8,7 +8,10 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ClientsPage } from './pages/ClientsPage';
 import { AccountsPage } from './pages/AccountsPage';
 import { SalesPage } from './pages/SalesPage';
+import { CashFlowPage } from './pages/CashFlowPage';
 import { ExpirationsPage } from './pages/ExpirationsPage';
+
+import { ToastProvider } from './components/common/Toast';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,58 +46,69 @@ export const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
+          <ToastProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
 
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <DashboardPage />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <DashboardPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/clients"
-                element={
-                  <ProtectedRoute>
-                    <ClientsPage />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/clients"
+                  element={
+                    <ProtectedRoute>
+                      <ClientsPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/accounts"
-                element={
-                  <ProtectedRoute>
-                    <AccountsPage />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/accounts"
+                  element={
+                    <ProtectedRoute>
+                      <AccountsPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/sales"
-                element={
-                  <ProtectedRoute>
-                    <SalesPage />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/sales"
+                  element={
+                    <ProtectedRoute>
+                      <SalesPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/expirations"
-                element={
-                  <ProtectedRoute>
-                    <ExpirationsPage />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/cash-flow"
+                  element={
+                    <ProtectedRoute>
+                      <CashFlowPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </BrowserRouter>
+                <Route
+                  path="/expirations"
+                  element={
+                    <ProtectedRoute>
+                      <ExpirationsPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </BrowserRouter>
+          </ToastProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

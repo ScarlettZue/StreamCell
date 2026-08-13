@@ -134,7 +134,7 @@ export const ClientsPage: React.FC = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por nombre o celular..."
+                placeholder="Buscar por nombre, celular o @usuario..."
                 className="w-full bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700/60 rounded-xl pl-11 pr-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-purple-600 transition-all shadow-sm"
               />
             </div>
@@ -194,7 +194,7 @@ export const ClientsPage: React.FC = () => {
               <tr>
                 <th className="px-6 py-4">Usuario</th>
                 <th className="px-6 py-4">Rol</th>
-                <th className="px-6 py-4">Celular / Teléfono</th>
+                <th className="px-6 py-4">Celular / @Usuario</th>
                 <th className="px-6 py-4">Fecha Registro</th>
                 <th className="px-6 py-4 text-right">Acciones</th>
               </tr>
@@ -468,13 +468,13 @@ export const ClientsPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Número de Celular</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Número de Celular o @Usuario</label>
                     <input
                       type="text"
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="Ej. 300 123 4567"
+                      placeholder="Ej. 300 123 4567 o @usuario"
                       className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-purple-600"
                     />
                   </div>
@@ -572,12 +572,13 @@ export const ClientsPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Número de Celular</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Número de Celular o @Usuario</label>
                     <input
                       type="text"
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Ej. 300 123 4567 o @usuario"
                       className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-purple-600"
                     />
                   </div>

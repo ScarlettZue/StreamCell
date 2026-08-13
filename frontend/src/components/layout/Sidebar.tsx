@@ -5,7 +5,8 @@ import {
   Users,
   Tv,
   AlertTriangle,
-  ShoppingBag,
+  Zap,
+  TrendingUp,
   LogOut,
   ShieldCheck,
   X,
@@ -22,9 +23,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Venta Rápida', path: '/sales', icon: Zap },
+    { name: 'Flujo de Caja', path: '/cash-flow', icon: TrendingUp },
     { name: 'Usuarios', path: '/clients', icon: Users },
-    { name: 'Cuentas & Perfiles', path: '/accounts', icon: Tv },
-    { name: 'Ventas & Precios', path: '/sales', icon: ShoppingBag },
+    { name: 'Servicios', path: '/accounts', icon: Tv },
     { name: 'Alertas de Corte', path: '/expirations', icon: AlertTriangle },
   ];
 

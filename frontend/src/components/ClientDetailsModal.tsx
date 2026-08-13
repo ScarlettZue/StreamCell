@@ -255,24 +255,24 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
                       </div>
 
                       {/* Detalles del Perfil & Credenciales */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
-                        <div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
+                        <div className="min-w-0">
                           <span className="text-slate-400 block text-[10px] font-bold uppercase">Correo de la Cuenta</span>
                           <span className="font-semibold text-slate-800 dark:text-slate-200 truncate block">
                             {account?.email || '-'}
                           </span>
                         </div>
 
-                        <div>
+                        <div className="min-w-0">
                           <span className="text-slate-400 block text-[10px] font-bold uppercase">PIN de Perfil</span>
-                          <span className="font-mono font-bold text-slate-900 dark:text-white block">
+                          <span className="font-mono font-extrabold text-amber-600 dark:text-amber-400 truncate block">
                             {profile?.hasPin && profile.pin ? profile.pin : 'Sin PIN'}
                           </span>
                         </div>
 
-                        <div>
+                        <div className="min-w-0">
                           <span className="text-slate-400 block text-[10px] font-bold uppercase">Fechas de Servicio</span>
-                          <span className="font-medium text-slate-700 dark:text-slate-300 block">
+                          <span className="font-medium text-slate-700 dark:text-slate-300 truncate block whitespace-nowrap">
                             {formatDateCO(sub.serviceStartDate)} — {formatDateCO(sub.serviceEndDate)}
                           </span>
                         </div>

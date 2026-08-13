@@ -20,12 +20,32 @@ export const productService = {
   async createProduct(data: {
     name: string;
     categoryId: string;
+    productCategory?: 'STREAMING' | 'SOFTWARE' | 'IA';
     type: ProductType;
     defaultCost: number;
     defaultPrice: number;
+    fullAccountPrice?: number;
     profilesCount: number;
   }): Promise<IProduct> {
     const res = await api.post<ApiResponse<IProduct>>('/products/products', data);
+    return res.data.data;
+  },
+
+  async updateProduct(
+    id: string,
+    data: Partial<{
+      name: string;
+      categoryId: string;
+      productCategory: 'STREAMING' | 'SOFTWARE' | 'IA';
+      type: ProductType;
+      defaultCost: number;
+      defaultPrice: number;
+      fullAccountPrice?: number;
+      profilesCount: number;
+      isActive: boolean;
+    }>
+  ): Promise<IProduct> {
+    const res = await api.put<ApiResponse<IProduct>>(`/products/products/${id}`, data);
     return res.data.data;
   },
 };

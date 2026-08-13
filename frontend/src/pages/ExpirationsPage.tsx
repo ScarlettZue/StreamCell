@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '../components/layout/MainLayout';
-import { AlertTriangle, MessageSquare, RefreshCw, UserX, Clock, CheckCircle2, Loader2, X, Send, XCircle } from 'lucide-react';
+import { AlertTriangle, MessageSquare, RefreshCw, UserX, Clock, CheckCircle2, Loader2, X, Send, XCircle, Edit2 } from 'lucide-react';
 import { accountService } from '../services/accountService';
 import { whatsappService } from '../services/whatsappService';
 import { subscriptionService } from '../services/subscriptionService';
-import { formatDateCO, getDaysRemaining } from '../utils/formatters';
-import { IProfileSubscription, IWhatsAppReminder } from '../types';
+import { formatDateCO, formatCurrency, getDaysRemaining } from '../utils/formatters';
+import { IProfileSubscription, IWhatsAppReminder, IAccount } from '../types';
+import { AccountEditModal } from '../components/AccountEditModal';
+import { AccountNotificationModal } from '../components/AccountNotificationModal';
 
 export const ExpirationsPage: React.FC = () => {
   const [selectedSub, setSelectedSub] = useState<IProfileSubscription | null>(null);
@@ -19,9 +21,14 @@ export const ExpirationsPage: React.FC = () => {
 
   // Revoke Modal State
   const [revokeModalOpen, setRevokeModalOpen] = useState(false);
-  const [withDebt, setWithDebt] = useState(false);
   const [debtAmount, setDebtAmount] = useState<number>(0);
   const [reason, setReason] = useState('');
+
+  // Guided Withdrawal Flow Modals
+  const [promptEditModalOpen, setPromptEditModalOpen] = useState(false);
+  const [accountEditModalOpen, setAccountEditModalOpen] = useState(false);
+  const [notificationModalOpen, setNotificationModalOpen] = useState(false);
+  const [activeAccountForEdit, setActiveAccountForEdit] = useState<IAccount | null>(null);
 
   // Renew Modal State
   const [renewModalOpen, setRenewModalOpen] = useState(false);
@@ -75,7 +82,7 @@ export const ExpirationsPage: React.FC = () => {
     mutationFn: () =>
       subscriptionService.revokeSubscription({
         subscriptionId: selectedSub!.id,
-        withDebt,
+        withDebt: debtAmount > 0,
         debtAmount,
         reason,
       }),
@@ -83,9 +90,16 @@ export const ExpirationsPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
       setRevokeModalOpen(false);
-      setSelectedSub(null);
+      const acc = selectedSub?.profile?.account || null;
+      if (acc) {
+        setActiveAccountForEdit(acc);
+        setPromptEditModalOpen(true);
+      } else {
+        setSelectedSub(null);
+      }
     },
   });
+
 
   const renewMutation = useMutation({
     mutationFn: () =>
@@ -150,8 +164,9 @@ export const ExpirationsPage: React.FC = () => {
               ) : (
                 activeSubscriptions.map((sub) => {
                   const daysLeft = getDaysRemaining(sub.serviceEndDate);
-                  const isExpired = daysLeft <= 0;
-                  const isWarning = daysLeft <= 3 && !isExpired;
+                  const isToday = daysLeft === 0;
+                  const isExpired = daysLeft < 0;
+                  const isWarning = daysLeft > 0 && daysLeft <= 3;
 
                   return (
                     <tr key={sub.id} className="hover:bg-slate-100/60 dark:hover:bg-slate-800/30 transition-colors">
@@ -173,7 +188,12 @@ export const ExpirationsPage: React.FC = () => {
                       <td className="px-6 py-4 text-xs font-bold text-slate-900 dark:text-white">{formatDateCO(sub.serviceEndDate)}</td>
 
                       <td className="px-6 py-4">
-                        {isExpired ? (
+                        {isToday ? (
+                          <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 animate-pulse">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>Vence hoy</span>
+                          </span>
+                        ) : isExpired ? (
                           <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/30 animate-pulse">
                             <AlertTriangle className="w-3.5 h-3.5" />
                             <span>Vencido hace {Math.abs(daysLeft)} días</span>
@@ -204,7 +224,9 @@ export const ExpirationsPage: React.FC = () => {
                           <button
                             onClick={() => {
                               setSelectedSub(sub);
-                              setSaleCost(Number(sub.profile?.account?.product?.defaultCost || 0));
+                              const totalProfiles = sub.profile?.account?.product?.profilesCount || 1;
+                              const unitCost = Math.round(Number(sub.profile?.account?.product?.defaultCost || 0) / totalProfiles);
+                              setSaleCost(unitCost);
                               setSalePrice(Number(sub.profile?.account?.product?.defaultPrice || 0));
                               setRenewModalOpen(true);
                             }}
@@ -217,7 +239,6 @@ export const ExpirationsPage: React.FC = () => {
                           <button
                             onClick={() => {
                               setSelectedSub(sub);
-                              setWithDebt(isExpired);
                               setRevokeModalOpen(true);
                             }}
                             className="p-2 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition-all"
@@ -249,8 +270,9 @@ export const ExpirationsPage: React.FC = () => {
           ) : (
             activeSubscriptions.map((sub) => {
               const daysLeft = getDaysRemaining(sub.serviceEndDate);
-              const isExpired = daysLeft <= 0;
-              const isWarning = daysLeft <= 3 && !isExpired;
+              const isToday = daysLeft === 0;
+              const isExpired = daysLeft < 0;
+              const isWarning = daysLeft > 0 && daysLeft <= 3;
 
               return (
                 <div key={sub.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm text-xs">
@@ -260,7 +282,11 @@ export const ExpirationsPage: React.FC = () => {
                       <span className="text-[11px] text-slate-500 font-mono block">{sub.client?.phone}</span>
                     </div>
 
-                    {isExpired ? (
+                    {isToday ? (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse">
+                        Vence hoy
+                      </span>
+                    ) : isExpired ? (
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse">
                         Vencido ({Math.abs(daysLeft)}d)
                       </span>
@@ -298,7 +324,9 @@ export const ExpirationsPage: React.FC = () => {
                       <button
                         onClick={() => {
                           setSelectedSub(sub);
-                          setSaleCost(Number(sub.profile?.account?.product?.defaultCost || 0));
+                          const totalProfiles = sub.profile?.account?.product?.profilesCount || 1;
+                          const unitCost = Math.round(Number(sub.profile?.account?.product?.defaultCost || 0) / totalProfiles);
+                          setSaleCost(unitCost);
                           setSalePrice(Number(sub.profile?.account?.product?.defaultPrice || 0));
                           setRenewModalOpen(true);
                         }}
@@ -311,7 +339,6 @@ export const ExpirationsPage: React.FC = () => {
                       <button
                         onClick={() => {
                           setSelectedSub(sub);
-                          setWithDebt(isExpired);
                           setRevokeModalOpen(true);
                         }}
                         className="p-2 bg-rose-500/10 text-rose-600 border border-rose-500/30 rounded-xl"
@@ -402,43 +429,39 @@ export const ExpirationsPage: React.FC = () => {
                     <p className="text-slate-600 dark:text-slate-400">Perfil: <strong className="text-brand-purple dark:text-brand-purple-light">{selectedSub.profile?.account?.product?.name} ({selectedSub.profile?.profileName})</strong></p>
                   </div>
 
-                  <div className="space-y-3 p-3 bg-slate-100 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <label className="flex items-center space-x-2 text-xs font-bold text-rose-700 dark:text-rose-300">
+                  <div className="space-y-3 p-3.5 bg-slate-100 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                        Monto de Deuda ($)
+                      </label>
                       <input
-                        type="checkbox"
-                        checked={withDebt}
-                        onChange={(e) => setWithDebt(e.target.checked)}
-                        className="rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-rose-600"
+                        type="number"
+                        step="any"
+                        min="0"
+                        required
+                        value={debtAmount}
+                        onChange={(e) => setDebtAmount(parseFloat(e.target.value) || 0)}
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-rose-600 dark:text-rose-400 font-mono font-bold"
                       />
-                      <span>¿Registrar saldo deudor al cliente por atraso?</span>
-                    </label>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                        {debtAmount > 0
+                          ? `Se registrará una deuda de ${formatCurrency(debtAmount)} al cliente por atraso.`
+                          : 'Si dejas $ 0 el servicio se retirará sin saldo deudor.'}
+                      </p>
+                    </div>
 
-                    {withDebt && (
-                      <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Monto de Deuda ($)</label>
-                          <input
-                            type="number"
-                            step="500"
-                            required
-                            value={debtAmount}
-                            onChange={(e) => setDebtAmount(parseFloat(e.target.value) || 0)}
-                            className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-rose-700 dark:text-rose-400 font-mono font-bold"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Motivo del Retiro</label>
-                          <input
-                            type="text"
-                            value={reason}
-                            onChange={(e) => setReason(e.target.value)}
-                            placeholder="Atraso de días en pago de mensualidad"
-                            className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white"
-                          />
-                        </div>
-                      </div>
-                    )}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                        Motivo del Retiro
+                      </label>
+                      <input
+                        type="text"
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                        placeholder="Atraso de días en pago de mensualidad"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white"
+                      />
+                    </div>
                   </div>
 
                   <div className="pt-3 flex justify-end space-x-3 border-t border-slate-200 dark:border-slate-800">
@@ -481,12 +504,36 @@ export const ExpirationsPage: React.FC = () => {
                 </div>
 
                 <form onSubmit={(e) => { e.preventDefault(); renewMutation.mutate(); }} className="space-y-4">
+                  {/* Tarjeta Informativa de Confirmación de Renovación */}
+                  <div className="p-3.5 bg-slate-100 dark:bg-slate-900/70 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 dark:text-slate-400 font-medium">Cliente:</span>
+                      <strong className="text-slate-900 dark:text-white font-bold">{selectedSub.client?.name || 'Cliente'}</strong>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 dark:text-slate-400 font-medium">Servicio / Perfil:</span>
+                      <strong className="text-purple-600 dark:text-purple-400 font-bold">
+                        {selectedSub.profile?.account?.product?.name || 'Servicio'} - {selectedSub.profile?.profileName || 'Perfil'}
+                      </strong>
+                    </div>
+                    {selectedSub.profile?.account?.email && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500 dark:text-slate-400 font-medium">Cuenta / Email:</span>
+                        <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{selectedSub.profile.account.email}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800/80">
+                      <span className="text-slate-500 dark:text-slate-400 font-medium">Fecha de Corte Actual:</span>
+                      <span className="font-mono font-bold text-amber-600 dark:text-amber-400">{formatDateCO(selectedSub.serviceEndDate)}</span>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4 p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Costo Real ($)</label>
                       <input
                         type="number"
-                        step="500"
+                        step="any"
                         required
                         value={saleCost}
                         onChange={(e) => setSaleCost(parseFloat(e.target.value) || 0)}
@@ -498,7 +545,7 @@ export const ExpirationsPage: React.FC = () => {
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Precio Cobrado ($)</label>
                       <input
                         type="number"
-                        step="500"
+                        step="any"
                         required
                         value={salePrice}
                         onChange={(e) => setSalePrice(parseFloat(e.target.value) || 0)}
@@ -529,7 +576,83 @@ export const ExpirationsPage: React.FC = () => {
             </div>,
             document.body
           )}
+
+        {/* Modal Pregunta Editar Cuenta Madre */}
+        {promptEditModalOpen &&
+          activeAccountForEdit &&
+          createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+              <div className="glass-panel w-full max-w-md p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl bg-white dark:bg-slate-900 space-y-4">
+                <div className="flex items-center space-x-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <div className="p-2.5 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                      Servicio Retirado con Éxito
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      El perfil ha quedado libre y disponible
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                  ¿Deseas realizar cambios en la <strong>cuenta madre</strong> ({activeAccountForEdit.email}) como correo, contraseña, PINs o perfiles en general?
+                </p>
+
+                <div className="pt-3 flex justify-end space-x-3 border-t border-slate-200 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPromptEditModalOpen(false);
+                      setSelectedSub(null);
+                      setActiveAccountForEdit(null);
+                    }}
+                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
+                    No, finalizar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPromptEditModalOpen(false);
+                      setAccountEditModalOpen(true);
+                    }}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold shadow-md flex items-center space-x-1.5"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    <span>Sí, editar cuenta madre</span>
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
+
+        {/* Modal Edición de Cuenta Madre */}
+        <AccountEditModal
+          isOpen={accountEditModalOpen}
+          onClose={() => setAccountEditModalOpen(false)}
+          account={activeAccountForEdit}
+          onSaved={(updatedAcc) => {
+            setActiveAccountForEdit(updatedAcc);
+            setNotificationModalOpen(true);
+          }}
+        />
+
+        {/* Modal Notificación Rápida por WhatsApp */}
+        <AccountNotificationModal
+          isOpen={notificationModalOpen}
+          onClose={() => {
+            setNotificationModalOpen(false);
+            setSelectedSub(null);
+            setActiveAccountForEdit(null);
+          }}
+          account={activeAccountForEdit}
+        />
       </div>
     </MainLayout>
   );
 };
+

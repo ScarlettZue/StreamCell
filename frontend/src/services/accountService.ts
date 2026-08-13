@@ -41,4 +41,30 @@ export const accountService = {
     const res = await api.post<ApiResponse<IAccount>>('/accounts', data);
     return res.data.data;
   },
+
+  async updateAccount(
+    id: string,
+    data: Partial<{
+      email: string;
+      password?: string;
+      startDate?: string;
+      dueDate?: string;
+      notes?: string;
+      profiles?: Array<{
+        id?: string;
+        profileName?: string;
+        hasPin?: boolean;
+        pin?: string;
+        isSold?: boolean;
+        clientId?: string;
+      }>;
+    }>
+  ): Promise<IAccount> {
+    const res = await api.put<ApiResponse<IAccount>>(`/accounts/${id}`, data);
+    return res.data.data;
+  },
+
+  async deleteAccount(id: string): Promise<void> {
+    await api.delete(`/accounts/${id}`);
+  },
 };

@@ -12,7 +12,7 @@ export const BottomNav: React.FC = () => {
   const navItems = [
     { name: 'Inicio', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Usuarios', path: '/clients', icon: Users },
-    { name: 'Cuentas', path: '/accounts', icon: Tv },
+    { name: 'Servicios', path: '/accounts', icon: Tv },
     { name: 'Ventas', path: '/sales', icon: ShoppingBag },
     { name: 'Alertas', path: '/expirations', icon: AlertTriangle },
   ];

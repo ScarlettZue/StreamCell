@@ -2,6 +2,8 @@ export type Role = 'ADMIN';
 
 export type ClientRole = 'CLIENTE' | 'DISTRIBUIDOR';
 
+export type ProductCategory = 'STREAMING' | 'SOFTWARE' | 'IA';
+
 export type ProductType = 'MULTI_PROFILE' | 'FULL_ACCOUNT' | 'PERSONAL_INVITATION';
 
 export type AccountStatus = 'ACTIVE' | 'EXPIRED' | 'SUSPENDED';
@@ -30,9 +32,11 @@ export interface IProduct {
   id: string;
   name: string;
   categoryId: string;
+  productCategory?: ProductCategory;
   type: ProductType;
   defaultCost: number;
   defaultPrice: number;
+  fullAccountPrice?: number | null;
   profilesCount: number;
   isActive: boolean;
   category?: ICategory;
