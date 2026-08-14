@@ -422,7 +422,7 @@ export const SalesPage: React.FC = () => {
         </div>
 
         {/* Tarjetas de Ventas - Móvil */}
-        <div className="sm:hidden space-y-3">
+        <div className="sm:hidden space-y-3 pb-24">
           {isLoading ? (
             <div className="text-center py-8 text-slate-500 dark:text-slate-400">
               <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
