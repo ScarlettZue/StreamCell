@@ -121,7 +121,7 @@ export const DashboardPage: React.FC = () => {
     return d.getFullYear() === now.getFullYear();
   }).length || 0;
 
-  // Extraer suscripciones vencidas/pendientes de corte
+  // Extraer suscripciones vencidas/pendientes de corte usando getDaysRemaining
   const expiredSubscriptions: Array<{
     sub: IProfileSubscription;
     accountEmail: string;
@@ -131,15 +131,14 @@ export const DashboardPage: React.FC = () => {
   }> = [];
 
   if (accounts) {
-    const nowTime = new Date().getTime();
     for (const acc of accounts) {
       if (!acc.profiles) continue;
       for (const prof of acc.profiles) {
         if (!prof.subscriptions) continue;
         for (const sub of prof.subscriptions) {
           if (sub.status === 'ACTIVE') {
-            const endDate = new Date(sub.serviceEndDate).getTime();
-            if (endDate < nowTime) {
+            const daysLeft = getDaysRemaining(sub.serviceEndDate);
+            if (daysLeft <= 0) {
               expiredSubscriptions.push({
                 sub,
                 accountEmail: acc.email,
@@ -152,6 +151,9 @@ export const DashboardPage: React.FC = () => {
         }
       }
     }
+    expiredSubscriptions.sort(
+      (a, b) => getDaysRemaining(a.sub.serviceEndDate) - getDaysRemaining(b.sub.serviceEndDate)
+    );
   }
 
   // Filtrado de dropdowns en modal
@@ -390,7 +392,11 @@ export const DashboardPage: React.FC = () => {
             ) : (
               <div className="space-y-3">
                 {expiredSubscriptions.slice(0, 5).map(({ sub, productName, profileName }) => {
-                  const daysExpired = Math.abs(getDaysRemaining(sub.serviceEndDate));
+                  const daysLeft = getDaysRemaining(sub.serviceEndDate);
+                  const isToday = daysLeft === 0;
+                  const isExpired = daysLeft < 0;
+                  const daysAbs = Math.abs(daysLeft);
+
                   return (
                     <div
                       key={sub.id}
@@ -401,9 +407,19 @@ export const DashboardPage: React.FC = () => {
                           <strong className="text-sm font-bold text-slate-900 dark:text-white">
                             {sub.client?.name || 'Cliente'}
                           </strong>
-                          <span className="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold text-[10px]">
-                            Vencido hace {daysExpired} {daysExpired === 1 ? 'día' : 'días'}
-                          </span>
+                          {isToday ? (
+                            <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-[10px] border border-amber-500/30">
+                              Vence hoy
+                            </span>
+                          ) : isExpired ? (
+                            <span className="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold text-[10px]">
+                              Vencido hace {daysAbs} {daysAbs === 1 ? 'día' : 'días'}
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-[10px]">
+                              Vence en {daysLeft} {daysLeft === 1 ? 'día' : 'días'}
+                            </span>
+                          )}
                         </div>
                         <p className="text-slate-500 dark:text-slate-400">
                           Servicio: <strong className="text-purple-600 dark:text-purple-400">{productName}</strong> ({profileName})

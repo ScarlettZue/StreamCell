@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '../components/layout/MainLayout';
-import { AlertTriangle, MessageSquare, RefreshCw, UserX, Clock, CheckCircle2, Loader2, X, Send, XCircle, Edit2, Copy, Check } from 'lucide-react';
+import { AlertTriangle, MessageSquare, RefreshCw, UserX, Clock, CheckCircle2, Loader2, X, Send, XCircle, Edit2, Copy, Check, Users, Tv, Search } from 'lucide-react';
 import { accountService } from '../services/accountService';
 import { whatsappService } from '../services/whatsappService';
 import { subscriptionService } from '../services/subscriptionService';
@@ -44,7 +44,41 @@ export const ExpirationsPage: React.FC = () => {
   const [editedRenewalMessage, setEditedRenewalMessage] = useState('');
   const [copiedSuccess, setCopiedSuccess] = useState(false);
 
+  // Tab Selector & Search State
+  const [activeTab, setActiveTab] = useState<'USER_SUBSCRIPTIONS' | 'MOTHER_ACCOUNTS'>('USER_SUBSCRIPTIONS');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Mother Account Renew Modal State
+  const [motherRenewModalOpen, setMotherRenewModalOpen] = useState(false);
+  const [selectedMotherAccount, setSelectedMotherAccount] = useState<IAccount | null>(null);
+  const [motherNewDueDate, setMotherNewDueDate] = useState<string>('');
+
   const queryClient = useQueryClient();
+
+  const updateMotherAccountMutation = useMutation({
+    mutationFn: () => {
+      if (!selectedMotherAccount) throw new Error('No account selected');
+      return accountService.updateAccount(selectedMotherAccount.id, {
+        dueDate: motherNewDueDate,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      setMotherRenewModalOpen(false);
+      setSelectedMotherAccount(null);
+    },
+  });
+
+  const handleOpenMotherRenewModal = (acc: IAccount) => {
+    setSelectedMotherAccount(acc);
+    const current = acc.dueDate ? new Date(acc.dueDate) : new Date();
+    const future = new Date(current.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const yyyy = future.getFullYear();
+    const mm = String(future.getMonth() + 1).padStart(2, '0');
+    const dd = String(future.getDate()).padStart(2, '0');
+    setMotherNewDueDate(`${yyyy}-${mm}-${dd}`);
+    setMotherRenewModalOpen(true);
+  };
 
   const handleOpenRenewModal = (sub: IProfileSubscription) => {
     setSelectedSub(sub);
@@ -98,6 +132,27 @@ export const ExpirationsPage: React.FC = () => {
   activeSubscriptions.sort(
     (a, b) => new Date(a.serviceEndDate).getTime() - new Date(b.serviceEndDate).getTime()
   );
+
+  const filteredActiveSubscriptions = activeSubscriptions.filter((sub) => {
+    const term = searchTerm.toLowerCase();
+    const clientName = sub.client?.name?.toLowerCase() || '';
+    const clientPhone = sub.client?.phone || '';
+    const prodName = sub.profile?.account?.product?.name?.toLowerCase() || '';
+    const profileName = sub.profile?.profileName?.toLowerCase() || '';
+    const email = sub.profile?.account?.email?.toLowerCase() || '';
+    return clientName.includes(term) || clientPhone.includes(term) || prodName.includes(term) || profileName.includes(term) || email.includes(term);
+  });
+
+  const motherAccounts = (accounts || [])
+    .filter((acc) => acc.dueDate)
+    .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime());
+
+  const filteredMotherAccounts = motherAccounts.filter((acc) => {
+    const term = searchTerm.toLowerCase();
+    const email = acc.email?.toLowerCase() || '';
+    const prod = acc.product?.name?.toLowerCase() || '';
+    return email.includes(term) || prod.includes(term);
+  });
 
   const whatsappMutation = useMutation({
     mutationFn: (sub: IProfileSubscription) =>
@@ -202,106 +257,235 @@ export const ExpirationsPage: React.FC = () => {
   return (
     <MainLayout title="Alertas de Vencimiento de Corte" subtitle="Gestión de notificaciones de WhatsApp con saludo horario y retiros con/sin deuda">
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-            <Clock className="w-5 h-5 text-amber-500" />
-            <span>Suscripciones Activas Próximas a Vencer</span>
-          </h3>
+        {/* Pestañas de Navegación y Buscador */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setActiveTab('USER_SUBSCRIPTIONS')}
+              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center space-x-2 ${
+                activeTab === 'USER_SUBSCRIPTIONS'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                  : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              <span>Cortes de Usuarios ({activeSubscriptions.length})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('MOTHER_ACCOUNTS')}
+              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center space-x-2 ${
+                activeTab === 'MOTHER_ACCOUNTS'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                  : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              <Tv className="w-4 h-4" />
+              <span>Cortes de Cuentas Madre ({motherAccounts.length})</span>
+            </button>
+          </div>
+
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder={activeTab === 'USER_SUBSCRIPTIONS' ? 'Buscar cliente o servicio...' : 'Buscar correo o plataforma...'}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-4 py-2 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-purple-500 w-full sm:w-64"
+            />
+          </div>
         </div>
 
-        {/* Tabla de Alertas - Escritorio */}
-        <div className="hidden sm:block glass-panel rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm">
-          <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
-            <thead className="bg-slate-100 dark:bg-slate-900/80 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="px-6 py-4">Cliente</th>
-                <th className="px-6 py-4">Producto & Perfil</th>
-                <th className="px-6 py-4">Credenciales</th>
-                <th className="px-6 py-4">Fecha de Corte</th>
-                <th className="px-6 py-4">Estado / Días</th>
-                <th className="px-6 py-4 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200/80 dark:divide-slate-800/60">
+        {/* CONTENIDO TAB 1: CORTES DE USUARIOS */}
+        {activeTab === 'USER_SUBSCRIPTIONS' && (
+          <>
+            {/* Tabla de Alertas - Escritorio */}
+            <div className="hidden sm:block glass-panel rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm">
+              <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+                <thead className="bg-slate-100 dark:bg-slate-900/80 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="px-6 py-4">Cliente</th>
+                    <th className="px-6 py-4">Producto & Perfil</th>
+                    <th className="px-6 py-4">Credenciales</th>
+                    <th className="px-6 py-4">Fecha de Corte</th>
+                    <th className="px-6 py-4">Estado / Días</th>
+                    <th className="px-6 py-4 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200/80 dark:divide-slate-800/60">
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={6} className="text-center py-8 text-slate-500 dark:text-slate-400">
+                        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                        Cargando alertas de vencimiento...
+                      </td>
+                    </tr>
+                  ) : filteredActiveSubscriptions.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center py-8 text-slate-500 dark:text-slate-400">
+                        No hay suscripciones activas coincidiendo con la búsqueda.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredActiveSubscriptions.map((sub) => {
+                      const daysLeft = getDaysRemaining(sub.serviceEndDate);
+                      const isToday = daysLeft === 0;
+                      const isExpired = daysLeft < 0;
+                      const isWarning = daysLeft > 0 && daysLeft <= 3;
+
+                      return (
+                        <tr key={sub.id} className="hover:bg-slate-100/60 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">
+                            {sub.client?.name}
+                            <span className="block text-xs font-normal text-slate-500 dark:text-slate-400 font-mono">{sub.client?.phone}</span>
+                          </td>
+
+                          <td className="px-6 py-4 text-xs">
+                            <span className="font-bold text-slate-900 dark:text-slate-200">{sub.profile?.account?.product?.name}</span>
+                            <span className="block text-slate-500 dark:text-slate-400">{sub.profile?.profileName}</span>
+                          </td>
+
+                          <td className="px-6 py-4 text-xs font-mono text-slate-600 dark:text-slate-400">
+                            <span>{sub.profile?.account?.email}</span>
+                            {sub.profile?.hasPin && <span className="block text-amber-700 dark:text-amber-300 font-bold">PIN: {sub.profile.pin}</span>}
+                          </td>
+
+                          <td className="px-6 py-4 text-xs font-bold text-slate-900 dark:text-white">{formatDateCO(sub.serviceEndDate)}</td>
+
+                          <td className="px-6 py-4">
+                            {isToday ? (
+                              <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 animate-pulse">
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>Vence hoy</span>
+                              </span>
+                            ) : isExpired ? (
+                              <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/30 animate-pulse">
+                                <AlertTriangle className="w-3.5 h-3.5" />
+                                <span>Vencido hace {Math.abs(daysLeft)} días</span>
+                              </span>
+                            ) : isWarning ? (
+                              <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>Vence en {daysLeft} días</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>{daysLeft} días restantes</span>
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end space-x-2">
+                              <button
+                                onClick={() => whatsappMutation.mutate(sub)}
+                                className="p-2 bg-emerald-600/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600/30 border border-emerald-500/30 rounded-xl transition-all"
+                                title="Enviar Recordatorio por WhatsApp"
+                              >
+                                <MessageSquare className="w-4 h-4" />
+                              </button>
+
+                              <button
+                                onClick={() => handleOpenRenewModal(sub)}
+                                className="p-2 bg-purple-500/20 text-purple-600 dark:text-purple-300 hover:bg-purple-500/30 border border-purple-500/30 rounded-xl transition-all"
+                                title="Renovar servicio"
+                              >
+                                <RefreshCw className="w-4 h-4" />
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setSelectedSub(sub);
+                                  setRevokeModalOpen(true);
+                                }}
+                                className="p-2 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition-all"
+                                title="Finalizar Servicio"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Tarjetas de Alertas - Móvil */}
+            <div className="sm:hidden space-y-3 pb-24">
               {isLoading ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-8 text-slate-500 dark:text-slate-400">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                    Cargando alertas de vencimiento...
-                  </td>
-                </tr>
-              ) : activeSubscriptions.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-8 text-slate-500 dark:text-slate-400">
-                    No hay suscripciones activas en este momento.
-                  </td>
-                </tr>
+                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                  Cargando alertas de vencimiento...
+                </div>
+              ) : filteredActiveSubscriptions.length === 0 ? (
+                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                  No hay suscripciones activas en este momento.
+                </div>
               ) : (
-                activeSubscriptions.map((sub) => {
+                filteredActiveSubscriptions.map((sub) => {
                   const daysLeft = getDaysRemaining(sub.serviceEndDate);
                   const isToday = daysLeft === 0;
                   const isExpired = daysLeft < 0;
                   const isWarning = daysLeft > 0 && daysLeft <= 3;
 
                   return (
-                    <tr key={sub.id} className="hover:bg-slate-100/60 dark:hover:bg-slate-800/30 transition-colors">
-                      <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">
-                        {sub.client?.name}
-                        <span className="block text-xs font-normal text-slate-500 dark:text-slate-400 font-mono">{sub.client?.phone}</span>
-                      </td>
+                    <div key={sub.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm text-xs">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-bold text-slate-900 dark:text-white text-sm">{sub.client?.name}</h4>
+                          <span className="text-[11px] text-slate-500 font-mono block">{sub.client?.phone}</span>
+                        </div>
 
-                      <td className="px-6 py-4 text-xs">
-                        <span className="font-bold text-slate-900 dark:text-slate-200">{sub.profile?.account?.product?.name}</span>
-                        <span className="block text-slate-500 dark:text-slate-400">{sub.profile?.profileName}</span>
-                      </td>
-
-                      <td className="px-6 py-4 text-xs font-mono text-slate-600 dark:text-slate-400">
-                        <span>{sub.profile?.account?.email}</span>
-                        {sub.profile?.hasPin && <span className="block text-amber-700 dark:text-amber-300 font-bold">PIN: {sub.profile.pin}</span>}
-                      </td>
-
-                      <td className="px-6 py-4 text-xs font-bold text-slate-900 dark:text-white">{formatDateCO(sub.serviceEndDate)}</td>
-
-                      <td className="px-6 py-4">
                         {isToday ? (
-                          <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 animate-pulse">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>Vence hoy</span>
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse">
+                            Vence hoy
                           </span>
                         ) : isExpired ? (
-                          <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/30 animate-pulse">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            <span>Vencido hace {Math.abs(daysLeft)} días</span>
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse">
+                            Vencido ({Math.abs(daysLeft)}d)
                           </span>
                         ) : isWarning ? (
-                          <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>Vence en {daysLeft} días</span>
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                            Vence ({daysLeft}d)
                           </span>
                         ) : (
-                          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>{daysLeft} días restantes</span>
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                            Activo ({daysLeft}d)
                           </span>
                         )}
-                      </td>
+                      </div>
 
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end space-x-2">
+                      <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-1">
+                        <div className="flex justify-between">
+                          <span className="font-bold text-slate-900 dark:text-white">{sub.profile?.account?.product?.name}</span>
+                          <span className="text-[11px] text-slate-500">{sub.profile?.profileName}</span>
+                        </div>
+                        <div className="font-mono text-[11px] text-slate-500 truncate">{sub.profile?.account?.email}</div>
+                      </div>
+
+                      <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <span className="text-[11px] text-slate-500">Corte: <strong className="text-slate-700 dark:text-slate-300">{formatDateCO(sub.serviceEndDate)}</strong></span>
+
+                        <div className="flex items-center space-x-2">
                           <button
                             onClick={() => whatsappMutation.mutate(sub)}
-                            className="p-2 bg-emerald-600/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600/30 border border-emerald-500/30 rounded-xl transition-all"
-                            title="Enviar Recordatorio por WhatsApp"
+                            className="p-2 bg-emerald-600 text-white rounded-xl"
+                            title="WhatsApp"
                           >
-                            <MessageSquare className="w-4 h-4" />
+                            <MessageSquare className="w-3.5 h-3.5" />
                           </button>
 
                           <button
                             onClick={() => handleOpenRenewModal(sub)}
-                            className="p-2 bg-purple-500/20 text-purple-600 dark:text-purple-300 hover:bg-purple-500/30 border border-purple-500/30 rounded-xl transition-all"
+                            className="p-2 bg-purple-600 text-white rounded-xl"
                             title="Renovar servicio"
                           >
-                            <RefreshCw className="w-4 h-4" />
+                            <RefreshCw className="w-3.5 h-3.5" />
                           </button>
 
                           <button
@@ -309,111 +493,112 @@ export const ExpirationsPage: React.FC = () => {
                               setSelectedSub(sub);
                               setRevokeModalOpen(true);
                             }}
-                            className="p-2 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition-all"
-                            title="Finalizar Servicio"
+                            className="p-2 bg-rose-500/10 text-rose-600 border border-rose-500/30 rounded-xl"
+                            title="Finalizar"
                           >
-                            <XCircle className="w-4 h-4" />
+                            <XCircle className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   );
                 })
               )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Tarjetas de Alertas - Móvil */}
-        <div className="sm:hidden space-y-3 pb-24">
-          {isLoading ? (
-            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-              <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-              Cargando alertas de vencimiento...
             </div>
-          ) : activeSubscriptions.length === 0 ? (
-            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-              No hay suscripciones activas en este momento.
-            </div>
-          ) : (
-            activeSubscriptions.map((sub) => {
-              const daysLeft = getDaysRemaining(sub.serviceEndDate);
-              const isToday = daysLeft === 0;
-              const isExpired = daysLeft < 0;
-              const isWarning = daysLeft > 0 && daysLeft <= 3;
+          </>
+        )}
 
-              return (
-                <div key={sub.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm text-xs">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-bold text-slate-900 dark:text-white text-sm">{sub.client?.name}</h4>
-                      <span className="text-[11px] text-slate-500 font-mono block">{sub.client?.phone}</span>
-                    </div>
+        {/* CONTENIDO TAB 2: CORTES DE CUENTAS MADRE */}
+        {activeTab === 'MOTHER_ACCOUNTS' && (
+          <div className="glass-panel rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm">
+            <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+              <thead className="bg-slate-100 dark:bg-slate-900/80 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="px-6 py-4">Plataforma</th>
+                  <th className="px-6 py-4">Correo Cuenta Madre</th>
+                  <th className="px-6 py-4">Perfiles (Vendidos/Total)</th>
+                  <th className="px-6 py-4">Fecha de Corte</th>
+                  <th className="px-6 py-4">Estado / Días</th>
+                  <th className="px-6 py-4 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200/80 dark:divide-slate-800/60">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-8 text-slate-500 dark:text-slate-400">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                      Cargando cuentas madre...
+                    </td>
+                  </tr>
+                ) : filteredMotherAccounts.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-8 text-slate-500 dark:text-slate-400">
+                      No hay cuentas madre registradas o con vencimiento configurado.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredMotherAccounts.map((acc) => {
+                    const daysLeft = acc.dueDate ? getDaysRemaining(acc.dueDate) : 999;
+                    const isToday = daysLeft === 0;
+                    const isExpired = daysLeft < 0;
+                    const isWarning = daysLeft > 0 && daysLeft <= 3;
+                    const totalProf = acc.profiles?.length || 0;
+                    const soldProf = acc.profiles?.filter((p) => p.status === 'SOLD').length || 0;
 
-                    {isToday ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse">
-                        Vence hoy
-                      </span>
-                    ) : isExpired ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse">
-                        Vencido ({Math.abs(daysLeft)}d)
-                      </span>
-                    ) : isWarning ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                        Vence ({daysLeft}d)
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                        Activo ({daysLeft}d)
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-1">
-                    <div className="flex justify-between">
-                      <span className="font-bold text-slate-900 dark:text-white">{sub.profile?.account?.product?.name}</span>
-                      <span className="text-[11px] text-slate-500">{sub.profile?.profileName}</span>
-                    </div>
-                    <div className="font-mono text-[11px] text-slate-500 truncate">{sub.profile?.account?.email}</div>
-                  </div>
-
-                  <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <span className="text-[11px] text-slate-500">Corte: <strong className="text-slate-700 dark:text-slate-300">{formatDateCO(sub.serviceEndDate)}</strong></span>
-
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => whatsappMutation.mutate(sub)}
-                        className="p-2 bg-emerald-600 text-white rounded-xl"
-                        title="WhatsApp"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5" />
-                      </button>
-
-                      <button
-                        onClick={() => handleOpenRenewModal(sub)}
-                        className="p-2 bg-purple-600 text-white rounded-xl"
-                        title="Renovar servicio"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setSelectedSub(sub);
-                          setRevokeModalOpen(true);
-                        }}
-                        className="p-2 bg-rose-500/10 text-rose-600 border border-rose-500/30 rounded-xl"
-                        title="Finalizar"
-                      >
-                        <XCircle className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+                    return (
+                      <tr key={acc.id} className="hover:bg-slate-100/60 dark:hover:bg-slate-800/30 transition-colors">
+                        <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
+                          {acc.product?.name || 'Servicio'}
+                        </td>
+                        <td className="px-6 py-4 font-mono text-xs text-slate-600 dark:text-slate-300">
+                          {acc.email}
+                        </td>
+                        <td className="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                          {soldProf} / {totalProf} perfiles
+                        </td>
+                        <td className="px-6 py-4 text-xs font-bold text-slate-900 dark:text-white font-mono">
+                          {acc.dueDate ? formatDateCO(acc.dueDate) : '-'}
+                        </td>
+                        <td className="px-6 py-4">
+                          {isToday ? (
+                            <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 animate-pulse">
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>Vence hoy</span>
+                            </span>
+                          ) : isExpired ? (
+                            <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/30 animate-pulse">
+                              <AlertTriangle className="w-3.5 h-3.5" />
+                              <span>Vencida hace {Math.abs(daysLeft)} días</span>
+                            </span>
+                          ) : isWarning ? (
+                            <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>Vence en {daysLeft} días</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Al día ({daysLeft}d)</span>
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={() => handleOpenMotherRenewModal(acc)}
+                            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center space-x-1 ml-auto transition-all"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            <span>Renovar (+30 Días)</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Modal WhatsApp Editable */}
         {wspModalOpen &&
@@ -808,6 +993,64 @@ export const ExpirationsPage: React.FC = () => {
                   >
                     <Send className="w-4 h-4" />
                     <span>Enviar Notificación por WhatsApp</span>
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
+
+        {/* Modal Renovar Cuenta Madre */}
+        {motherRenewModalOpen &&
+          selectedMotherAccount &&
+          createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+              <div className="glass-panel w-full max-w-md p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-glass space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <RefreshCw className="w-5 h-5 text-purple-500" />
+                    <span>Renovar Cuenta Madre</span>
+                  </h3>
+                  <button onClick={() => setMotherRenewModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+                    <p className="text-slate-500 dark:text-slate-400 font-semibold">Plataforma: <strong className="text-slate-900 dark:text-white">{selectedMotherAccount.product?.name}</strong></p>
+                    <p className="text-slate-500 dark:text-slate-400 font-semibold">Correo: <strong className="text-slate-900 dark:text-white font-mono">{selectedMotherAccount.email}</strong></p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                      Nueva Fecha de Vencimiento de Cuenta Madre
+                    </label>
+                    <input
+                      type="date"
+                      value={motherNewDueDate}
+                      onChange={(e) => setMotherNewDueDate(e.target.value)}
+                      className="w-full bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs p-3 rounded-2xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end space-x-2 border-t border-slate-200 dark:border-slate-800 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setMotherRenewModalOpen(false)}
+                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    disabled={updateMotherAccountMutation.isPending}
+                    onClick={() => updateMotherAccountMutation.mutate()}
+                    className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center space-x-1 transition-all"
+                  >
+                    {updateMotherAccountMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    <span>Confirmar Renovación</span>
                   </button>
                 </div>
               </div>
