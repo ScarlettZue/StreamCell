@@ -44,8 +44,23 @@ export class SubscriptionController {
       if (serviceEndDate) {
         sEndDate = new Date(serviceEndDate);
       } else {
-        const baseDate = new Date(subscription.serviceEndDate);
-        baseDate.setDate(baseDate.getDate() + daysToAdd);
+        const baseIso = subscription.serviceEndDate instanceof Date
+          ? subscription.serviceEndDate.toISOString()
+          : String(subscription.serviceEndDate);
+        const match = baseIso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        let y: number, m: number, d: number;
+        if (match) {
+          y = parseInt(match[1], 10);
+          m = parseInt(match[2], 10) - 1;
+          d = parseInt(match[3], 10);
+        } else {
+          const dObj = new Date(subscription.serviceEndDate);
+          y = dObj.getUTCFullYear();
+          m = dObj.getUTCMonth();
+          d = dObj.getUTCDate();
+        }
+        const baseDate = new Date(Date.UTC(y, m, d));
+        baseDate.setUTCDate(baseDate.getUTCDate() + daysToAdd);
         sEndDate = baseDate;
       }
 

@@ -72,6 +72,10 @@ Nunca crear código mezclando responsabilidades entre módulos.
 - Priorizar componentes reutilizables.
 - No romper funcionalidades existentes.
 - Documentar decisiones importantes.
+- **Rama por defecto**: Estar siempre ubicado en la rama `develop`.
+- **Despliegue y Pruebas**: No mantener ni ejecutar despliegues locales. Las pruebas se ejecutan directamente en Vercel vinculadas a la rama `develop`.
+- **Commits y Push**: Queda estrictamente prohibido ejecutar `git commit` o `git push` a menos que el usuario lo ordene explícitamente.
+
 
 ---
 

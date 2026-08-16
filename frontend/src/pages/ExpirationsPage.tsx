@@ -6,7 +6,7 @@ import { AlertTriangle, MessageSquare, RefreshCw, UserX, Clock, CheckCircle2, Lo
 import { accountService } from '../services/accountService';
 import { whatsappService } from '../services/whatsappService';
 import { subscriptionService } from '../services/subscriptionService';
-import { formatDateCO, formatCurrency, getDaysRemaining, formatRenewalWhatsAppMessage, buildWhatsAppLink } from '../utils/formatters';
+import { formatDateCO, formatCurrency, getDaysRemaining, addDaysToDate, formatRenewalWhatsAppMessage, buildWhatsAppLink } from '../utils/formatters';
 import { IProfileSubscription, IWhatsAppReminder, IAccount } from '../types';
 import { AccountEditModal } from '../components/AccountEditModal';
 import { AccountNotificationModal } from '../components/AccountNotificationModal';
@@ -101,12 +101,6 @@ export const ExpirationsPage: React.FC = () => {
     setSalePrice(baseSalePrice * factor);
   };
 
-  const calculateNewEndDate = (currentEndDate: string | Date, days: number): Date => {
-    const date = new Date(currentEndDate);
-    date.setDate(date.getDate() + days);
-    return date;
-  };
-
   const { data: accounts, isLoading } = useQuery({
     queryKey: ['accounts'],
     queryFn: accountService.getAccounts,
@@ -195,7 +189,7 @@ export const ExpirationsPage: React.FC = () => {
 
   const renewMutation = useMutation({
     mutationFn: () => {
-      const calculatedEndDate = calculateNewEndDate(selectedSub!.serviceEndDate, durationDays);
+      const calculatedEndDate = addDaysToDate(selectedSub!.serviceEndDate, durationDays);
       return subscriptionService.renewSubscription({
         subscriptionId: selectedSub!.id,
         saleCost,
@@ -211,7 +205,7 @@ export const ExpirationsPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['expirations'] });
 
       const phone = selectedSub?.client?.phone || '';
-      const newEndDate = updatedSub?.serviceEndDate || calculateNewEndDate(selectedSub!.serviceEndDate, durationDays);
+      const newEndDate = updatedSub?.serviceEndDate || addDaysToDate(selectedSub!.serviceEndDate, durationDays);
 
       const formattedMessage = formatRenewalWhatsAppMessage({
         productName: selectedSub?.profile?.account?.product?.name || 'Servicio',
@@ -866,7 +860,7 @@ export const ExpirationsPage: React.FC = () => {
                     <div className="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800/80">
                       <span className="text-emerald-600 dark:text-emerald-400 font-bold">Nueva Fecha de Corte:</span>
                       <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                        {formatDateCO(calculateNewEndDate(selectedSub.serviceEndDate, durationDays))}
+                        {formatDateCO(addDaysToDate(selectedSub.serviceEndDate, durationDays))}
                       </span>
                     </div>
                   </div>

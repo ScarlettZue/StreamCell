@@ -105,6 +105,36 @@ export const getDaysRemaining = (dueDateInput: string | Date): number => {
 };
 
 /**
+ * Suma una cantidad de días a una fecha (cadena YYYY-MM-DD/ISO o Date) sin traslación UTC a hora local.
+ */
+export const addDaysToDate = (dateInput: string | Date, days: number): Date => {
+  if (!dateInput) return new Date();
+
+  let y: number, m: number, d: number;
+  if (typeof dateInput === 'string') {
+    const match = dateInput.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      y = parseInt(match[1], 10);
+      m = parseInt(match[2], 10) - 1;
+      d = parseInt(match[3], 10);
+    } else {
+      const parsed = new Date(dateInput);
+      y = parsed.getFullYear();
+      m = parsed.getMonth();
+      d = parsed.getDate();
+    }
+  } else {
+    y = dateInput.getFullYear();
+    m = dateInput.getMonth();
+    d = dateInput.getDate();
+  }
+
+  const result = new Date(y, m, d);
+  result.setDate(result.getDate() + days);
+  return result;
+};
+
+/**
  * Formatea una fecha a formato largo latino (ej: "12 agosto de 2026")
  */
 export const formatDateLongCO = (dateInput: string | Date): string => {
