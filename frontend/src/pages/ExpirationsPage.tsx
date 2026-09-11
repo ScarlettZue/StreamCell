@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '../components/layout/MainLayout';
-import { AlertTriangle, MessageSquare, RefreshCw, UserX, Clock, CheckCircle2, Loader2, X, Send, XCircle, Edit2, Copy, Check, Users, Tv, Search } from 'lucide-react';
+import { AlertTriangle, MessageSquare, RefreshCw, UserX, Clock, CheckCircle2, Loader2, X, Send, XCircle, Edit2, Copy, Check, Users, Tv, Search, Trash2 } from 'lucide-react';
 import { accountService } from '../services/accountService';
 import { whatsappService } from '../services/whatsappService';
 import { subscriptionService } from '../services/subscriptionService';
@@ -52,6 +52,28 @@ export const ExpirationsPage: React.FC = () => {
   const [motherRenewModalOpen, setMotherRenewModalOpen] = useState(false);
   const [selectedMotherAccount, setSelectedMotherAccount] = useState<IAccount | null>(null);
   const [motherNewDueDate, setMotherNewDueDate] = useState<string>('');
+
+  // Mother Account Cancel Modal State
+  const [motherCancelModalOpen, setMotherCancelModalOpen] = useState(false);
+  const [selectedMotherAccountForCancel, setSelectedMotherAccountForCancel] = useState<IAccount | null>(null);
+
+  const deleteMotherAccountMutation = useMutation({
+    mutationFn: (id: string) => accountService.deleteAccount(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['expirations'] });
+      queryClient.invalidateQueries({ queryKey: ['availableProfiles'] });
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      setMotherCancelModalOpen(false);
+      setSelectedMotherAccountForCancel(null);
+    },
+  });
+
+  const handleOpenMotherCancelModal = (acc: IAccount) => {
+    setSelectedMotherAccountForCancel(acc);
+    setMotherCancelModalOpen(true);
+  };
 
   const queryClient = useQueryClient();
 
@@ -579,13 +601,22 @@ export const ExpirationsPage: React.FC = () => {
                             )}
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <button
-                              onClick={() => handleOpenMotherRenewModal(acc)}
-                              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center space-x-1 ml-auto transition-all"
-                            >
-                              <RefreshCw className="w-3.5 h-3.5" />
-                              <span>Renovar (+30 Días)</span>
-                            </button>
+                            <div className="flex items-center justify-end space-x-2">
+                              <button
+                                onClick={() => handleOpenMotherRenewModal(acc)}
+                                className="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center space-x-1 transition-all"
+                              >
+                                <RefreshCw className="w-3.5 h-3.5" />
+                                <span>Renovar (+30 Días)</span>
+                              </button>
+                              <button
+                                onClick={() => handleOpenMotherCancelModal(acc)}
+                                className="px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold shadow-sm flex items-center space-x-1 transition-all"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Cancelar Cuenta</span>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -647,13 +678,22 @@ export const ExpirationsPage: React.FC = () => {
                         <span className="text-slate-500">Corte: <strong className="text-slate-700 dark:text-slate-200 font-mono">{acc.dueDate ? formatDateCO(acc.dueDate) : '-'}</strong></span>
                       </div>
 
-                      <button
-                        onClick={() => handleOpenMotherRenewModal(acc)}
-                        className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold text-xs shadow-md flex items-center justify-center space-x-1.5 active:scale-95 transition-all"
-                      >
-                        <RefreshCw className="w-4 h-4" />
-                        <span>Renovar Cuenta Madre (+30 Días)</span>
-                      </button>
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <button
+                          onClick={() => handleOpenMotherRenewModal(acc)}
+                          className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold text-xs shadow-md flex items-center justify-center space-x-1.5 active:scale-95 transition-all"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                          <span>Renovar (+30d)</span>
+                        </button>
+                        <button
+                          onClick={() => handleOpenMotherCancelModal(acc)}
+                          className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center space-x-1.5 active:scale-95 transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span>Cancelar Cuenta</span>
+                        </button>
+                      </div>
                     </div>
                   );
                 })
@@ -1113,6 +1153,87 @@ export const ExpirationsPage: React.FC = () => {
                   >
                     {updateMotherAccountMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                     <span>Confirmar Renovación</span>
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
+
+        {/* Modal Confirmar Cancelación / Baja de Cuenta Madre */}
+        {motherCancelModalOpen &&
+          selectedMotherAccountForCancel &&
+          createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+              <div className="glass-panel w-full max-w-md p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl bg-white dark:bg-slate-900 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <Trash2 className="w-5 h-5 text-rose-500" />
+                    <span>Cancelar / Dar de Baja Cuenta Madre</span>
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setMotherCancelModalOpen(false);
+                      setSelectedMotherAccountForCancel(null);
+                    }}
+                    className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div className="p-3.5 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-1.5">
+                    <p className="text-slate-600 dark:text-slate-400 font-semibold">
+                      Plataforma: <strong className="text-slate-900 dark:text-white">{selectedMotherAccountForCancel.product?.name || 'Servicio'}</strong>
+                    </p>
+                    <p className="text-slate-600 dark:text-slate-400 font-semibold">
+                      Correo: <strong className="text-slate-900 dark:text-white font-mono">{selectedMotherAccountForCancel.email}</strong>
+                    </p>
+                    <p className="text-slate-600 dark:text-slate-400 font-semibold">
+                      Perfiles Vendidos: <strong className="text-purple-600 dark:text-purple-400 font-bold">
+                        {selectedMotherAccountForCancel.profiles?.filter((p) => p.status === 'SOLD').length || 0} / {selectedMotherAccountForCancel.profiles?.length || 0}
+                      </strong>
+                    </p>
+                  </div>
+
+                  {((selectedMotherAccountForCancel.profiles?.filter((p) => p.status === 'SOLD').length || 0) > 0) ? (
+                    <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-2xl space-y-1 text-rose-700 dark:text-rose-300">
+                      <div className="flex items-center space-x-1.5 font-bold text-xs">
+                        <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500" />
+                        <span>¡Atención! Perfiles Vendidos Activos</span>
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-rose-600 dark:text-rose-400">
+                        Esta cuenta madre posee perfiles con clientes activos. Al darla de baja, el servicio se retirará de forma permanente y las suscripciones asociadas quedarán anuladas.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-700 dark:text-amber-300 text-[11px] leading-relaxed">
+                      Esta acción eliminará la cuenta madre de los registros de inventario y alertas de vencimiento.
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-end space-x-3 border-t border-slate-200 dark:border-slate-800 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMotherCancelModalOpen(false);
+                      setSelectedMotherAccountForCancel(null);
+                    }}
+                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                  >
+                    Volver
+                  </button>
+                  <button
+                    type="button"
+                    disabled={deleteMotherAccountMutation.isPending}
+                    onClick={() => deleteMotherAccountMutation.mutate(selectedMotherAccountForCancel.id)}
+                    className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center space-x-1.5 transition-all"
+                  >
+                    {deleteMotherAccountMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    <Trash2 className="w-4 h-4" />
+                    <span>Confirmar Cancelación</span>
                   </button>
                 </div>
               </div>
