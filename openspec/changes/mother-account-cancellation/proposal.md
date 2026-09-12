@@ -1,6 +1,6 @@
 ## Why
 
-Actualmente en el apartado de "Cortes de Cuentas Madre" dentro de la vista de Vencimientos (`ExpirationsPage.tsx`), únicamente existe la opción de renovar la fecha de corte de la cuenta madre por +30 días o una fecha personalizada. Cuando el administrador decide dejar de pagar una cuenta madre con su proveedor o descontinuarla, no existe una opción directa desde la interfaz para cancelarla / darla de baja, lo que ocasiona que permanezca indeterminadamente en la lista de vencidas o requiera eliminaciones manuales.
+Actualmente en el apartado de "Cortes de Cuentas Madre" dentro de la vista de Vencimientos (`ExpirationsPage.tsx`), únicamente existe la opción de renovar la fecha de corte de la cuenta madre por +30 días o una fecha personalizada. Cuando el administrador decide dejar de pagar una cuenta madre con su proveedor o descontinuarla, no existe una opción directa desde la interfaz para cancelarla / darla de baja, lo que ocasiona que permanezca indeterminadamente en la lista de vencidas.
 
 Esta funcionalidad integra la opción explícita de "Cancelar Cuenta Madre" directamente en las secciones de escritorio y móvil de Cortes de Cuentas Madre, con una confirmación clara y control del impacto sobre perfiles o usuarios activos.
 
@@ -8,7 +8,7 @@ Esta funcionalidad integra la opción explícita de "Cancelar Cuenta Madre" dire
 
 - **Opción "Cancelar Cuenta Madre" en Alertas de Corte**: Se añade un botón/acción de "Cancelar" (Dar de baja) junto al botón de "Renovar" en la tabla y tarjetas táctiles del apartado "Cortes de Cuentas Madre".
 - **Modal de Confirmación de Cancelación**: Se añade un modal interactivo con advertencias si la cuenta madre posee perfiles con suscripciones activas a clientes, permitiendo al administrador confirmar la baja segura.
-- **Gestión de Baja en Backend y Frontend**: Se invoca el borrado/desactivación de la cuenta madre y sus asociaciones correspondientes a través de las mutaciones de TanStack React Query, refrescando automáticamente el listado de vencimientos y cuentas.
+- **Gestión Exclusiva en Frontend**: Se invoca el borrado de la cuenta madre consumiendo el servicio existente `accountService.deleteAccount(id)` y actualizando la caché de TanStack React Query, sin alterar ningún archivo del Backend para garantizar 100% de estabilidad en las APIs.
 
 ## Capabilities
 
@@ -17,5 +17,5 @@ Esta funcionalidad integra la opción explícita de "Cancelar Cuenta Madre" dire
 
 ## Impact
 
-- **Frontend**: `frontend/src/pages/ExpirationsPage.tsx` (nueva acción, modal de confirmación con modal portal, mutaciones).
-- **Backend**: `backend/src/presentation/controllers/accountController.ts` y `backend/src/services/accountService.ts` (verificación de endpoints para baja de cuentas y perfiles).
+- **Frontend**: `frontend/src/pages/ExpirationsPage.tsx` (nueva acción, modal de confirmación con React Portal `z-[9999]`, mutación TanStack Query).
+- **Backend**: **Sin modificaciones en el Backend**. Se preserva la arquitectura y los endpoints existentes en producción intactos (`DELETE /api/v1/accounts/:id`).

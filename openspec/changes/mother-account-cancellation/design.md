@@ -11,22 +11,22 @@ Ver `proposal.md`. Actualmente, la pestaña "Cortes de Cuentas Madre" en `fronte
 - Respetar de forma estricta las reglas de UI/UX de StreamCell (modo claro/oscuro, sin emojis, uso exclusivo de íconos Lucide como `Trash2` o `XCircle`).
 
 **Non-Goals:**
-- No se modificarán los esquemas de base de datos de Prisma ni se agregarán endpoints redundantes, ya que `AccountController.deleteAccount` maneja la transacción de baja e invoca la limpieza en cascada.
+- No se modificará absolutamente ningún archivo del Backend (`backend/src/...` ni `backend/package.json`), manteniendo intacto y 100% estable el backend en producción.
 
 ## Decisions
 
 ### 1. Ubicación de Botón y Flujo de Interacción
-- **Decisión**: Añadir un botón rojo/rose con ícono `Trash2` o `XCircle` al lado del botón de "Renovar (+30 Días)" en la tabla de escritorio y en las tarjetas móviles del tab `MOTHER_ACCOUNTS`.
+- **Decisión**: Añadir un botón rojo/rose con ícono `Trash2` al lado del botón de "Renovar (+30 Días)" en la tabla de escritorio y en las tarjetas móviles del tab `MOTHER_ACCOUNTS`.
 - **Razón**: Permite al administrador tomar una acción rápida e intuitiva cuando decide dejar de pagar un proveedor o servicio.
 
 ### 2. Design del Modal de Confirmación (`createPortal`)
 - **Decisión**: Implementar el modal de confirmación mediante `createPortal` en `document.body` utilizando `z-[9999]` y backdrop borroso.
 - **Detalle de Contenido**: Mostrar la plataforma, correo, número de perfiles vendidos/disponibles y una alerta visual condicional (`bg-rose-500/10 border-rose-500/30`) si hay perfiles con suscripciones activas.
 
-### 3. Invalidación de Caché y Mutaciones de TanStack Query
-- **Decisión**: Usar una mutación `deleteMotherAccountMutation` que invoque `accountService.deleteAccount(selectedMotherAccount.id)`. Al resultar exitosa, invalidará las queryKeys `['accounts']`, `['expirations']`, `['availableProfiles']`, `['clients']`, `['sales']`.
+### 3. Invalidación de Caché y Mutaciones de TanStack Query desde Frontend
+- **Decisión**: Usar la mutación `deleteMotherAccountMutation` que invoque la API cliente existente `accountService.deleteAccount(selectedMotherAccount.id)`. Al resultar exitosa, invalidará las queryKeys `['accounts']`, `['expirations']`, `['availableProfiles']`, `['clients']`, `['sales']`.
 
 ## Risks / Trade-offs
 
 - **[Riesgo]** Cancelar una cuenta madre con suscripciones activas retira automáticamente el acceso de los clientes asociados.
-  → **Mitigación**: El modal de confirmación exige validación activa del usuario indicando cuántos perfiles/clientes se verán afectados antes de ejecutar el borrado en backend.
+  → **Mitigación**: El modal de confirmación exige validación activa del usuario indicando cuántos perfiles/clientes se verán afectados antes de ejecutar el borrado.
